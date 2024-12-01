@@ -23,7 +23,6 @@ pub fn part_b(contents: &str) -> i32 {
     for val1 in vec1.into_iter() {
         total2 += *counter.get(&val1).unwrap_or(&0) * val1;
     }
-    println!("{:?}", total2);
     return total2
 }
 
@@ -43,18 +42,20 @@ pub fn parse(contents: &str) -> (Vec<i32>, Vec<i32>) {
 #[cfg(test)]
 mod tests{
     use super::*;
-    use std::fs;
+    use std::{file, fs, path::Path};
 
     #[test]
     fn test_1() {
-        let file_path = "input/2024/day01_small.txt".to_string();
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part_a(&contents), 11);
     }
 
     #[test]
     fn test_2() {
-        let file_path = "input/2024/day01_small.txt".to_string();
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part_b(&contents), 31);
     }
