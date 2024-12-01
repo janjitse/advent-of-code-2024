@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+
 #[aoc(day1, part1)]
 pub fn part_a(contents: &str) -> i32 {
     let (mut vec1, mut vec2) = parse(contents);
@@ -9,7 +10,7 @@ pub fn part_a(contents: &str) -> i32 {
         .iter()
         .zip(vec2.iter())
         .fold(0, |acc, (&x1, &x2)| acc + (x1 - x2).abs());
-    return total
+    return total;
 }
 
 #[aoc(day1, part2)]
@@ -19,28 +20,29 @@ pub fn part_b(contents: &str) -> i32 {
     for val2 in vec2.into_iter() {
         *counter.entry(val2).or_insert(0) += 1;
     }
-    let mut total2 = 0;
-    for val1 in vec1.into_iter() {
-        total2 += *counter.get(&val1).unwrap_or(&0) * val1;
-    }
-    return total2
+    let total2 = vec1
+        .into_iter()
+        .fold(0, |acc, x| acc + *counter.get(&x).unwrap_or(&0) * x);
+    return total2;
 }
 
 pub fn parse(contents: &str) -> (Vec<i32>, Vec<i32>) {
-    let mut vec1: Vec<i32> = vec![];
-    let mut vec2: Vec<i32> = vec![];
-    // let vec: Vec<i32> = contents.split_ascii_whitespace().map(|x|x.parse().unwrap()).collect();
-    // let vec1 = vec[(0..vec.len()).step_by(2)];
-    for line in contents.lines() {
-        let parsed = line.split_ascii_whitespace().collect::<Vec<&str>>();
-        vec1.push(parsed[0].parse().unwrap());
-        vec2.push(parsed[1].parse().unwrap());
-    }
-    return (vec1, vec2)
+    let vec: Vec<i32> = contents
+        .split_ascii_whitespace()
+        .map(|x| x.parse().unwrap())
+        .collect();
+    let vec1 = vec.iter().step_by(2).map(|x| *x).collect::<Vec<i32>>();
+    let vec2 = vec
+        .iter()
+        .skip(1)
+        .step_by(2)
+        .map(|x| *x)
+        .collect::<Vec<i32>>();
+    return (vec1, vec2);
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     use std::{file, fs, path::Path};
 
