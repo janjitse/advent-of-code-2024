@@ -2,15 +2,7 @@ use std::collections::HashMap;
 
 #[aoc(day1, part1)]
 pub fn part_a(contents: &str) -> i32 {
-    let mut vec1: Vec<i32> = vec![];
-    let mut vec2: Vec<i32> = vec![];
-    // let vec: Vec<i32> = contents.split_ascii_whitespace().map(|x|x.parse().unwrap()).collect();
-    // let vec1 = vec[(0..vec.len()).step_by(2)];
-    for line in contents.lines() {
-        let parsed = line.split_ascii_whitespace().collect::<Vec<&str>>();
-        vec1.push(parsed[0].parse().unwrap());
-        vec2.push(parsed[1].parse().unwrap());
-    }
+    let (mut vec1, mut vec2) = parse(contents);
     vec1.sort_unstable();
     vec2.sort_unstable();
     let total = vec1
@@ -22,13 +14,7 @@ pub fn part_a(contents: &str) -> i32 {
 
 #[aoc(day1, part2)]
 pub fn part_b(contents: &str) -> i32 {
-    let mut vec1: Vec<i32> = vec![];
-    let mut vec2: Vec<i32> = vec![];
-    for line in contents.lines() {
-        let parsed = line.split_ascii_whitespace().collect::<Vec<&str>>();
-        vec1.push(parsed[0].parse().unwrap());
-        vec2.push(parsed[1].parse().unwrap());
-    }
+    let (vec1, vec2) = parse(contents);
     let mut counter: HashMap<i32, i32> = HashMap::new();
     for val2 in vec2.into_iter() {
         *counter.entry(val2).or_insert(0) += 1;
@@ -39,6 +25,19 @@ pub fn part_b(contents: &str) -> i32 {
     }
     println!("{:?}", total2);
     return total2
+}
+
+pub fn parse(contents: &str) -> (Vec<i32>, Vec<i32>) {
+    let mut vec1: Vec<i32> = vec![];
+    let mut vec2: Vec<i32> = vec![];
+    // let vec: Vec<i32> = contents.split_ascii_whitespace().map(|x|x.parse().unwrap()).collect();
+    // let vec1 = vec[(0..vec.len()).step_by(2)];
+    for line in contents.lines() {
+        let parsed = line.split_ascii_whitespace().collect::<Vec<&str>>();
+        vec1.push(parsed[0].parse().unwrap());
+        vec2.push(parsed[1].parse().unwrap());
+    }
+    return (vec1, vec2)
 }
 
 #[cfg(test)]
