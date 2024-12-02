@@ -3,24 +3,11 @@ pub fn part_a(contents: &str) -> i32 {
     let todo = parse(contents);
     let mut total_safe = 0;
     for t in todo {
-        let mut safe = true;
+        let safe: bool;
         if t[0] > *t.last().unwrap() {
-            // descending
-            for w in t.windows(2) {
-                if w[0] <= w[1] || w[0] - 4 >= w[1] {
-                    safe = false;
-                    break;
-                }
-            }
-        }
-        if t[0] <= *t.last().unwrap() {
-            // ascending
-            for w in t.windows(2) {
-                if w[0] >= w[1] || w[1] - 4 >= w[0] {
-                    safe = false;
-                    break;
-                }
-            }
+            safe = check_all_descending(t);
+        } else {
+            safe = check_all_ascending(t);
         }
         if safe {
             total_safe += 1;
@@ -36,8 +23,7 @@ pub fn part_b(contents: &str) -> i32 {
     let mut total_safe = 0;
 
     for t in todo.iter_mut() {
-        // let orig_t = t.clone();
-        let mut safe = false;
+        let mut safe = false;        
         if check_all_ascending(t.to_vec()) || check_all_descending(t.to_vec()) {
             safe = true;
         } else {
@@ -60,7 +46,6 @@ pub fn part_b(contents: &str) -> i32 {
 
 fn check_all_descending(t: Vec<i32>) -> bool {
     let mut safe = true;
-    // descending
     for w in t.windows(2) {
         if w[0] <= w[1] || w[0] - 4 >= w[1] {
             safe = false;
@@ -71,7 +56,6 @@ fn check_all_descending(t: Vec<i32>) -> bool {
 }
 
 fn check_all_ascending(t: Vec<i32>) -> bool {
-    // ascending
     let mut safe = true;
     for w in t.windows(2) {
         if w[0] >= w[1] || w[1] - 4 >= w[0] {
