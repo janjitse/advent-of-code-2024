@@ -6,22 +6,24 @@ pub fn part_a(contents: &str) -> i32 {
     vec1.sort_unstable();
     vec2.sort_unstable();
     let total = vec1
-        .iter()
-        .zip(vec2.iter())
-        .fold(0, |acc, (&x1, &x2)| acc + (x1 - x2).abs());
+        .into_iter()
+        .zip(vec2)
+        .map(|(x1, x2)| (x1 - x2).abs())
+        .sum();
     return total;
 }
 
 #[aoc(day1, part2)]
-pub fn part_b(contents: &str) -> i64 {
+pub fn part_b(contents: &str) -> i32 {
     let (vec1, vec2) = parse(contents);
     let mut counter: HashMap<i32, i32> = HashMap::new();
     for val2 in vec2.into_iter() {
         *counter.entry(val2).or_insert(0) += 1;
     }
-    let total2 = vec1.into_iter().fold(0, |acc, x| {
-        acc + *counter.get(&x).unwrap_or(&0) as i64 * x as i64
-    });
+    let total2 = vec1
+        .iter()
+        .map(|x| *counter.get(x).unwrap_or(&0) as i32 * *x as i32)
+        .sum();
     return total2;
 }
 
