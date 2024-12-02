@@ -6,7 +6,7 @@ pub fn part_a(contents: &str) -> i32 {
         let mut safe = true;
         if t[0] > *t.last().unwrap() {
             // descending
-            for w  in t.windows(2) {
+            for w in t.windows(2) {
                 if w[0] <= w[1] || w[0] - 4 >= w[1] {
                     safe = false;
                     break;
@@ -18,23 +18,23 @@ pub fn part_a(contents: &str) -> i32 {
             for w in t.windows(2) {
                 if w[0] >= w[1] || w[1] - 4 >= w[0] {
                     safe = false;
-                    break
+                    break;
                 }
             }
         }
         if safe {
-            total_safe +=1;
+            total_safe += 1;
         }
     }
 
-    return total_safe
+    return total_safe;
 }
 
 #[aoc(day2, part2)]
 pub fn part_b(contents: &str) -> i32 {
     let mut todo = parse(contents);
     let mut total_safe = 0;
-    
+
     for t in todo.iter_mut() {
         // let orig_t = t.clone();
         let mut safe = false;
@@ -45,54 +45,53 @@ pub fn part_b(contents: &str) -> i32 {
                 let removed = t.remove(mask);
                 if check_all_ascending(t.to_vec()) || check_all_descending(t.to_vec()) {
                     safe = true;
-                    break
+                    break;
                 }
                 t.insert(mask, removed);
-                
             }
         }
-       
+
         if safe {
-            total_safe +=1;
+            total_safe += 1;
         }
     }
-    return total_safe
+    return total_safe;
 }
 
 fn check_all_descending(t: Vec<i32>) -> bool {
     let mut safe = true;
     // descending
-        for w  in t.windows(2) {
-            if w[0] <= w[1] || w[0] - 4 >= w[1] {
-                safe = false;
-                break;
-            }
+    for w in t.windows(2) {
+        if w[0] <= w[1] || w[0] - 4 >= w[1] {
+            safe = false;
+            break;
         }
-    return safe
+    }
+    return safe;
 }
 
 fn check_all_ascending(t: Vec<i32>) -> bool {
     // ascending
     let mut safe = true;
-                for w in t.windows(2) {
-                    if w[0] >= w[1] || w[1] - 4 >= w[0] {
-                        safe = false;
-                        break
-                    }
-                }
-                return safe
+    for w in t.windows(2) {
+        if w[0] >= w[1] || w[1] - 4 >= w[0] {
+            safe = false;
+            break;
+        }
+    }
+    return safe;
 }
 
 pub fn parse(contents: &str) -> Vec<Vec<i32>> {
     let mut output = vec![];
     for line in contents.lines() {
         let vec: Vec<i32> = line
-        .split_ascii_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect::<Vec<i32>>();
+            .split_ascii_whitespace()
+            .map(|x| x.parse().unwrap())
+            .collect::<Vec<i32>>();
         output.push(vec);
     }
-    return output    
+    return output;
 }
 
 #[cfg(test)]
