@@ -23,19 +23,21 @@ pub fn part2(input: &str) -> i32 {
 
 #[aoc(day3, part2, cleaner)]
 pub fn part2_cleaner(input: &str) -> i64 {
-    let re = Regex::new(r"(mul\(([0-9]{1,3}),([0-9]{1,3})\))|(don't\(\))|(do\(\))").unwrap();
+    let re = Regex::new(r"(mul|do|don't)\((([0-9]{1,3}),([0-9]{1,3}))?\)").unwrap();
     let mut on = true;
     let mut output = 0;
     for x in re.captures_iter(input) {
-        let s = x.get(0).unwrap().as_str();
-        if on && s.starts_with("mul") {
-            let left: i64 = x.get(2).unwrap().as_str().parse().unwrap();
-            let right: i64 = x.get(3).unwrap().as_str().parse().unwrap();
-            output += left * right;
-        } else if s == "don't()" {
-            on = false;
-        } else if s == "do()" {
-            on = true;
+        match &x[1] {
+            "do" => {on = true;},
+            "don't" => {on = false;},
+            "mul" => {
+                if on {
+                    let left: i32 = x[3].parse().unwrap();
+                    let right: i32 = x[4].parse().unwrap();
+                    output += (left * right) as i64;
+                }
+            },
+            _ => {}
         }
     }
     return output;
