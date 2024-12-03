@@ -4,7 +4,7 @@ use regex::Regex;
 pub fn part1(input: &str) -> i32 {
     let p = parse(input);
     let outcome = p.iter().map(|x| x[0] * x[1]).sum();
-    return outcome
+    return outcome;
 }
 
 #[aoc(day3, part2)]
@@ -17,29 +17,47 @@ pub fn part2(input: &str) -> i32 {
         if last_dos >= last_donts {
             outcome += mul[0] * mul[1];
         }
-
     }
-    return outcome
+    return outcome;
+}
+
+#[aoc(day3, part2, cleaner)]
+pub fn part2_cleaner(input: &str) -> i64 {
+    let re = Regex::new(r"(mul\(([0-9]{1,3}),([0-9]{1,3})\))|(don't\(\))|(do\(\))").unwrap();
+    let mut on = true;
+    let mut output = 0;
+    for x in re.captures_iter(input) {
+        let s = x.get(0).unwrap().as_str();
+        if on && s.starts_with("mul") {
+            let left: i64 = x.get(2).unwrap().as_str().parse().unwrap();
+            let right: i64 = x.get(3).unwrap().as_str().parse().unwrap();
+            output += left * right;
+        } else if s == "don't()" {
+            on = false;
+        } else if s == "do()" {
+            on = true;
+        }
+    }
+    return output;
 }
 
 fn parse(input: &str) -> Vec<Vec<i32>> {
     let mut output = vec![];
-    let re = Regex::new(r"mul\(([0-9]+),([0-9]+)\)").unwrap();
+    let re = Regex::new(r"mul\(([0-9]{1,3}),([0-9]{1,3})\)").unwrap();
     for line in input.lines() {
-        for (x, [y,z]) in re.captures_iter(line).map(|x| x.extract()) {
-            println!("{:?}", x);
+        for (_, [y, z]) in re.captures_iter(line).map(|x| x.extract()) {
+            // println!("{:?}", x);
             let left: i32 = y.parse().unwrap();
             let right: i32 = z.parse().unwrap();
             output.push(vec![left, right]);
-            
         }
     }
-    return output
+    return output;
 }
 
 fn parse_b(input: &str) -> (Vec<Vec<i32>>, Vec<usize>, Vec<usize>, Vec<usize>) {
     let mut output = vec![];
-    let re = Regex::new(r"mul\(([0-9]+),([0-9]+)\)").unwrap();
+    let re = Regex::new(r"mul\(([0-9]{1,3}),([0-9]{1,3})\)").unwrap();
     let re_do = Regex::new(r"do\(\)").unwrap();
     let re_dont = Regex::new(r"don't\(\)").unwrap();
 
@@ -47,35 +65,32 @@ fn parse_b(input: &str) -> (Vec<Vec<i32>>, Vec<usize>, Vec<usize>, Vec<usize>) {
     let mut dont_pos = vec![];
     let mut mul_pos = vec![];
     let line = input;
-        for d in re_do.captures_iter(line).map(|x| x.get(0).unwrap().start()) {
-            do_pos.push(d);
-        }
-        for d in re_dont.captures_iter(line).map(|x| x.get(0).unwrap().start()) {
-            dont_pos.push(d);
-        }
-        for d in re.captures_iter(line).map(|x| x.get(0).unwrap().start()) {
-            mul_pos.push(d);
-        }
-        for (x, [y,z]) in re.captures_iter(line).map(|x| x.extract()) {
-            println!("{:?}", x);
-            let left: i32 = y.parse().unwrap();
-            let right: i32 = z.parse().unwrap();
-            output.push(vec![left, right]);
-            
-        }
-        
-    
-    println!("{:?}, {:?}, {:?}", do_pos, dont_pos, mul_pos);
-    println!("{:?}, {:?}", do_pos.len(), dont_pos.len());
-    return (output, do_pos, dont_pos, mul_pos)
+    for d in re_do.captures_iter(line).map(|x| x.get(0).unwrap().start()) {
+        do_pos.push(d);
+    }
+    for d in re_dont
+        .captures_iter(line)
+        .map(|x| x.get(0).unwrap().start())
+    {
+        dont_pos.push(d);
+    }
+    for d in re.captures_iter(line).map(|x| x.get(0).unwrap().start()) {
+        mul_pos.push(d);
+    }
+    for (_, [y, z]) in re.captures_iter(line).map(|x| x.extract()) {
+        // println!("{:?}", x);
+        let left: i32 = y.parse().unwrap();
+        let right: i32 = z.parse().unwrap();
+        output.push(vec![left, right]);
+    }
+    return (output, do_pos, dont_pos, mul_pos);
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::{file, fs, path::Path};
-    
+
     #[test]
     fn test_1() {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
