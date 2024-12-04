@@ -1,8 +1,5 @@
 fn parse(input: &str) -> Vec<Vec<char>> {
-    let mut output = vec![];
-    for line in input.lines() {
-        output.push(line.chars().collect())
-    }
+    let output = input.lines().map(|l| l.chars().collect()).collect();
     return output;
 }
 
@@ -10,7 +7,8 @@ fn parse(input: &str) -> Vec<Vec<char>> {
 fn part1(input: &str) -> i32 {
     let vec_c = parse(input);
     let mut total = 0;
-    for dir in [
+    let mas_vec = vec!['M', 'A', 'S'];
+    let directions = [
         (0, 1),
         (1, 0),
         (1, 1),
@@ -19,23 +17,30 @@ fn part1(input: &str) -> i32 {
         (usize::MAX, usize::MAX),
         (1, usize::MAX),
         (0, usize::MAX),
-    ] {
-        for start_x in 0..vec_c.len() {
-            for start_y in 0..vec_c[0].len() {
-                let mut test: Vec<char> = vec![];
-                let mut pos_x = start_x;
-                let mut pos_y = start_y;
-                for let_idx in 0..4 {
-                    test.push(vec_c[pos_x][pos_y]);
-                    pos_x = pos_x.wrapping_add(dir.0);
-                    pos_y = pos_y.wrapping_add(dir.1);
-                    if pos_x >= vec_c.len() || pos_y >= vec_c[0].len() {
-                        break;
+    ];
+    for start_x in 0..vec_c.len() {
+        for start_y in 0..vec_c[0].len() {
+            if vec_c[start_x][start_y] == 'X' {
+                for dir in directions {
+                    let mut test: Vec<char> = vec![];
+                    let mut pos_x = start_x;
+                    let mut pos_y = start_y;
+                    for idx in 0..3 {
+                        pos_x = pos_x.wrapping_add(dir.0);
+                        pos_y = pos_y.wrapping_add(dir.1);
+                        if pos_x >= vec_c.len() || pos_y >= vec_c[0].len() {
+                            break;
+                        }
+                        let test_c = vec_c[pos_x][pos_y];
+                        if test_c == mas_vec[idx] {
+                            test.push(test_c);
+                        } else {
+                            break;
+                        }
                     }
-                }
-                if test == vec!['X', 'M', 'A', 'S'] {
-                    total += 1;
-                    // println!("{:?}, {:?},{:?}", dir, start_x, start_y);
+                    if test == mas_vec {
+                        total += 1;
+                    }
                 }
             }
         }
@@ -47,6 +52,10 @@ fn part1(input: &str) -> i32 {
 fn part2(input: &str) -> i32 {
     let vec_c = parse(input);
     let mut total = 0;
+    let mmss = vec!['M', 'M', 'S', 'S'];
+    let smms = vec!['S', 'M', 'M', 'S'];
+    let ssmm = vec!['S', 'S', 'M', 'M'];
+    let mssm = vec!['M', 'S', 'S', 'M'];
     for start_x in 1..vec_c.len() - 1 {
         for start_y in 1..vec_c[0].len() - 1 {
             let mut test: Vec<char> = vec![];
@@ -59,13 +68,14 @@ fn part2(input: &str) -> i32 {
                 ] {
                     let pos_x = start_x.wrapping_add(around.0);
                     let pos_y = start_y.wrapping_add(around.1);
-                    test.push(vec_c[pos_x][pos_y]);
+                    let test_c = vec_c[pos_x][pos_y];
+                    if test_c == 'S' || test_c == 'M' {
+                        test.push(test_c);
+                    } else {
+                        break;
+                    }
                 }
-                if test == vec!['S', 'M', 'M', 'S']
-                    || test == vec!['S', 'S', 'M', 'M']
-                    || test == vec!['M', 'S', 'S', 'M']
-                    || test == vec!['M', 'M', 'S', 'S']
-                {
+                if test == mmss || test == ssmm || test == mssm || test == smms {
                     total += 1;
                 }
             }
