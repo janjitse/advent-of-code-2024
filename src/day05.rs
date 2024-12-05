@@ -26,13 +26,8 @@ use std::collections::{HashMap, HashSet};
 #[aoc(day5, part1)]
 fn part1(input: &str) -> i32 {
     let (x1, x2) = parse(input);
-    let mut ordering_before = HashMap::new();
     let mut ordering_after = HashMap::new();
     for x in x1.into_iter() {
-        ordering_before
-            .entry(x[0])
-            .or_insert(HashSet::new())
-            .insert(x[1]);
         ordering_after
             .entry(x[1])
             .or_insert(HashSet::new())
@@ -41,24 +36,13 @@ fn part1(input: &str) -> i32 {
     let mut output = 0;
     for y in x2 {
         let mut is_possible = true;
-        for (idx, val) in y.iter().enumerate() {
-            match ordering_after.get(val) {
-                None => {
-                    continue;
-                }
-                Some(t) => {
-                    for next_idx in idx..y.len() {
-                        if t.contains(&y[next_idx]) {
-                            println!("{:?} should come before {:?}", y[next_idx], *val);
-                            is_possible = false;
-                            break;
-                        }
-                    }
-                }
+        for left_right in y.windows(2) {
+            if cmp_cust(&left_right[0], &left_right[1], &ordering_after) == Ordering::Greater {
+                is_possible = false;
+                break;
             }
         }
         if is_possible {
-            println!("{:?}", y);
             let mid_idx = y.len() / 2;
             output += y[mid_idx];
         }
@@ -67,28 +51,25 @@ fn part1(input: &str) -> i32 {
 }
 use std::cmp::Ordering;
 
-fn cmp_cust(&a: &i32, &b: &i32, ordering_after: &HashMap<i32, HashSet<i32>>) -> Ordering {
-    match ordering_after.get(&a) {
-        None => {}
+fn cmp_cust(a: &i32, b: &i32, ordering_after: &HashMap<i32, HashSet<i32>>) -> Ordering {
+    match ordering_after.get(a) {
+        None => {
+            return Ordering::Less;
+        }
         Some(t) => {
-            if t.contains(&b) {
+            if t.contains(b) {
                 return Ordering::Greater;
             }
+            return Ordering::Less;
         }
     }
-    return Ordering::Less;
 }
 
 #[aoc(day5, part2)]
 fn part2(input: &str) -> i32 {
     let (x1, mut x2) = parse(input);
-    let mut ordering_before = HashMap::new();
     let mut ordering_after = HashMap::new();
     for x in x1.into_iter() {
-        ordering_before
-            .entry(x[0])
-            .or_insert(HashSet::new())
-            .insert(x[1]);
         ordering_after
             .entry(x[1])
             .or_insert(HashSet::new())
@@ -96,13 +77,18 @@ fn part2(input: &str) -> i32 {
     }
     let mut output = 0;
     for y in x2.iter_mut() {
-        let y_before = y.clone();
-        println!("{:?}", y);
-        y.sort_by(|a, b| cmp_cust(a, b, &ordering_after));
-        println!("{:?}", y);
-        let mid_point = y.len() / 2;
-        if &y_before != y {
-            output += y[mid_point];
+        let mut is_possible = true;
+        for left_right in y.windows(2) {
+            if cmp_cust(&left_right[0], &left_right[1], &ordering_after) == Ordering::Greater {
+                is_possible = false;
+                break;
+            }
+        }
+        if !is_possible {
+            let mid_idx = y.len() / 2;
+            output += *y
+                .select_nth_unstable_by(mid_idx, |a, b| cmp_cust(a, b, &ordering_after))
+                .1;
         }
     }
     return output;
