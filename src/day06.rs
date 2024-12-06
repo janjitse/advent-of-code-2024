@@ -105,7 +105,7 @@ fn part2(input: &str) -> i32 {
         guard_been_new_dir.insert((guard_pos, cur_dir_idx));
         loop {
             let mut next_pos = (guard_pos.0.wrapping_add(cur_dir.0), guard_pos.1.wrapping_add(cur_dir.1));
-            if obstacles_new.contains(&next_pos) {
+            while obstacles_new.contains(&next_pos) {
                 cur_dir_idx = (cur_dir_idx + 1)%4;
                 cur_dir = dirs[cur_dir_idx];
                 next_pos = (guard_pos.0.wrapping_add(cur_dir.0), guard_pos.1.wrapping_add(cur_dir.1))
