@@ -7,5 +7,10 @@ authors = ["Jan Jitse <janjitse@gmail.com>"]
 [dependencies]
 aoc-runner = "*"
 aoc-runner-derive = "*"
+fxhash = "0.2.1"
 rayon = "1.10.0"
 regex = "1.11.1"
+
+[profile.release]
+strip = "debuginfo"
+lto = "thin"

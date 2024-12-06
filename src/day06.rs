@@ -8,7 +8,7 @@ fn parse(input: &str) -> Vec<Vec<char>> {
     return output1;
 }
 
-use std::collections::{HashMap, HashSet};
+use fxhash::FxHashSet;
 
 use rayon::prelude::*;
 
@@ -16,8 +16,8 @@ use rayon::prelude::*;
 fn part1(input: &str) -> i32 {
     let vec1 = parse(input);
     let mut guard_pos = (0, 0);
-    let mut guard_been = HashSet::new();
-    let mut obstacles = HashSet::new();
+    let mut guard_been = FxHashSet::default();
+    let mut obstacles = FxHashSet::default();
     for x in 0..vec1.len() {
         for y in 0..vec1[0].len() {
             if vec1[x][y] == '#' {
@@ -25,10 +25,10 @@ fn part1(input: &str) -> i32 {
             }
             if vec1[x][y] == '^' {
                 guard_pos = (x, y);
-                guard_been.insert(guard_pos);
             }
         }
     }
+    guard_been.insert(guard_pos);
     let dirs = [(usize::MAX, 0), (0, 1), (1, 0), (0, usize::MAX)];
     let mut cur_dir = dirs[0];
     let mut cur_dir_idx = 0;
@@ -74,23 +74,23 @@ fn insert_sorted(sorted_vec: &mut Vec<usize>, val: usize) {
 fn check_loop(
     extra_obst: &(usize, usize),
     guard_orig_start: &(usize, usize),
-    obstacle_per_row: &HashMap<usize, Vec<usize>>,
-    obstacle_per_col: &HashMap<usize, Vec<usize>>,
+    obstacle_per_row: &Vec<Vec<usize>>,
+    obstacle_per_col: &Vec<Vec<usize>>,
     vec_size: &(usize, usize),
 ) -> bool {
     if extra_obst == guard_orig_start {
         return false;
     }
     // println!("Checking {:?}", extra_obst);
-    let mut guard_been_new_dir = HashSet::new();
+    let mut guard_been_new_dir = FxHashSet::default();
     let mut obst_row_new = obstacle_per_row.clone();
     let mut obst_col_new = obstacle_per_col.clone();
     insert_sorted(
-        obst_row_new.entry(extra_obst.0).or_insert(vec![]),
+        &mut obst_row_new[extra_obst.0],
         extra_obst.1,
     );
     insert_sorted(
-        obst_col_new.entry(extra_obst.1).or_insert(vec![]),
+        &mut obst_col_new[extra_obst.1],
         extra_obst.0,
     );
 
@@ -101,27 +101,27 @@ fn check_loop(
     loop {
         let next_pos = match cur_dir_idx {
             0 => {
-                let check = obst_col_new.get(&guard_pos.1);
+                let check = &obst_col_new[guard_pos.1];
                 let next_obst_row =
-                    find_next_smaller(check.unwrap_or(&vec![]), &guard_pos.0, usize::MAX - 1);
+                    find_next_smaller(check, &guard_pos.0, usize::MAX - 1);
                 (next_obst_row + 1, guard_pos.1)
             }
             1 => {
-                let check = obst_row_new.get(&guard_pos.0);
+                let check = &obst_row_new[guard_pos.0];
                 let next_obst_col =
-                    find_next_larger(check.unwrap_or(&vec![]), &guard_pos.1, vec_size.1);
+                    find_next_larger(check, &guard_pos.1, vec_size.1);
                 (guard_pos.0, next_obst_col - 1)
             }
             2 => {
-                let check = obst_col_new.get(&guard_pos.1);
+                let check = &obst_col_new[guard_pos.1];
                 let next_obst_row =
-                    find_next_larger(check.unwrap_or(&vec![]), &guard_pos.0, vec_size.0);
+                    find_next_larger(check, &guard_pos.0, vec_size.0);
                 (next_obst_row - 1, guard_pos.1)
             }
             3 => {
-                let check = obst_row_new.get(&guard_pos.0);
+                let check = &obst_row_new[guard_pos.0];
                 let next_obst_col =
-                    find_next_smaller(check.unwrap_or(&vec![]), &guard_pos.1, usize::MAX - 1);
+                    find_next_smaller(check, &guard_pos.1, usize::MAX - 1);
                 (guard_pos.0, next_obst_col + 1)
             }
             _ => {
@@ -134,6 +134,7 @@ fn check_loop(
         }
         cur_dir_idx = (cur_dir_idx + 1) % 4;
         if guard_been_new_dir.contains(&(next_pos, cur_dir_idx)) {
+            // println!("Loop fount at {:?}",extra_obst);
             return true;
         }
 
@@ -147,16 +148,18 @@ fn part2(input: &str) -> i32 {
     let vec1 = parse(input);
     let mut guard_pos = (0, 0);
 
-    let mut orig_obstacles = HashSet::new();
-    let mut obstacle_per_row = HashMap::new();
-    let mut obstacle_per_col = HashMap::new();
+    let mut orig_obstacles = FxHashSet::default();
+    // let mut obstacle_per_row = FxHashMap::default();
+    // let mut obstacle_per_col = FxHashMap::default();
     let vec_size = (vec1.len(), vec1[0].len());
+    let mut obstacle_per_row = vec![vec![];vec_size.0];
+    let mut obstacle_per_col = vec![vec![];vec_size.1];
     for x in 0..vec1.len() {
         for y in 0..vec1[0].len() {
             if vec1[x][y] == '#' {
                 orig_obstacles.insert((x, y));
-                obstacle_per_row.entry(x).or_insert(vec![]).push(y);
-                obstacle_per_col.entry(y).or_insert(vec![]).push(x);
+                obstacle_per_row[x].push(y);
+                obstacle_per_col[y].push(x);
             }
             if vec1[x][y] == '^' {
                 guard_pos = (x, y);
@@ -166,14 +169,14 @@ fn part2(input: &str) -> i32 {
     
     // println!("{:?}",obstacle_per_col.values().map(|x| x.len()).max().unwrap() );
     // println!("{:?}",obstacle_per_row.values().map(|x| x.len()).max().unwrap() );
-    obstacle_per_col
-        .values_mut()
-        .for_each(|x| x.sort_unstable());
-    obstacle_per_row
-        .values_mut()
-        .for_each(|x| x.sort_unstable());
+    for subvec in obstacle_per_col.iter_mut() {
+        subvec.sort_unstable();
+    }
+    for subvec in obstacle_per_row.iter_mut() {
+        subvec.sort_unstable();
+    }
     let guard_orig_start = guard_pos.clone();
-    let mut guard_been = HashSet::new();
+    let mut guard_been = FxHashSet::default();
     let dirs = [(usize::MAX, 0), (0, 1), (1, 0), (0, usize::MAX)];
     let mut cur_dir = dirs[0];
     let mut cur_dir_idx = 0;
@@ -198,7 +201,7 @@ fn part2(input: &str) -> i32 {
         guard_pos = next_pos;
     }
     let nr_loops = guard_been
-        .par_iter()
+        .iter()
         .filter(|&x| {
             check_loop(
                 x,
