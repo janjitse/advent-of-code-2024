@@ -37,7 +37,7 @@ fn part1(input: &str) -> i32 {
             guard_pos.0.wrapping_add(cur_dir.0),
             guard_pos.1.wrapping_add(cur_dir.1),
         );
-        if obstacles.contains(&next_pos) {
+        while obstacles.contains(&next_pos) {
             cur_dir_idx = (cur_dir_idx + 1) % 4;
             cur_dir = dirs[cur_dir_idx];
             next_pos = (
@@ -54,6 +54,23 @@ fn part1(input: &str) -> i32 {
     return guard_been.len() as i32;
 }
 
+fn find_next_larger(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
+    let larger_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
+    let larger_val = *sorted_vec.get(larger_idx).unwrap_or(&(default + 1));
+    return larger_val;
+}
+
+fn find_next_smaller(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
+    let smaller_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
+    let smaller_val = *sorted_vec.get(smaller_idx - 1).unwrap_or(&default);
+    return smaller_val;
+}
+
+fn insert_sorted(sorted_vec: &mut Vec<usize>, val: usize) {
+    let insert_idx = sorted_vec.binary_search(&val).unwrap_or_else(|e| e);
+    sorted_vec.insert(insert_idx, val);
+}
+
 fn check_loop(
     extra_obst: &(usize, usize),
     guard_orig_start: &(usize, usize),
@@ -67,24 +84,14 @@ fn check_loop(
     let mut guard_been_new_dir = HashSet::new();
     let mut obst_row_new = obstacle_per_row.clone();
     let mut obst_col_new = obstacle_per_col.clone();
-    let new_row_loc = obst_row_new
-        .entry(extra_obst.0)
-        .or_insert(vec![])
-        .binary_search(&extra_obst.1)
-        .unwrap_or_else(|e| e);
-    obst_row_new
-        .entry(extra_obst.0)
-        .or_insert(vec![])
-        .insert(new_row_loc, extra_obst.1);
-    let new_col_loc = obst_col_new
-        .entry(extra_obst.1)
-        .or_insert(vec![])
-        .binary_search(&extra_obst.0)
-        .unwrap_or_else(|e| e);
-    obst_col_new
-        .entry(extra_obst.1)
-        .or_insert(vec![])
-        .insert(new_col_loc, extra_obst.0);
+    insert_sorted(
+        obst_row_new.entry(extra_obst.0).or_insert(vec![]),
+        extra_obst.1,
+    );
+    insert_sorted(
+        obst_col_new.entry(extra_obst.1).or_insert(vec![]),
+        extra_obst.0,
+    );
 
     let mut guard_pos = guard_orig_start.clone();
     let mut cur_dir_idx = 0;
@@ -94,64 +101,41 @@ fn check_loop(
         let next_pos = match cur_dir_idx {
             0 => {
                 let check = obst_col_new.get(&guard_pos.1);
-                let next_obst_row_idx = check
-                    .unwrap_or(&vec![])
-                    .binary_search(&guard_pos.0)
-                    .unwrap_or_else(|e| e);
-                let next_obst_row = *check
-                    .unwrap_or(&vec![])
-                    .get(next_obst_row_idx - 1)
-                    .unwrap_or(&(usize::MAX - 1));
-                (next_obst_row.wrapping_add(1), guard_pos.1)
+                let next_obst_row =
+                    find_next_smaller(check.unwrap_or(&vec![]), &guard_pos.0, usize::MAX - 1);
+                (next_obst_row + 1, guard_pos.1)
             }
             1 => {
                 let check = obst_row_new.get(&guard_pos.0);
-                let next_obst_col_idx = check
-                    .unwrap_or(&vec![])
-                    .binary_search(&guard_pos.1)
-                    .unwrap_or_else(|e| e);
-                let next_obst_col = *check
-                    .unwrap_or(&vec![])
-                    .get(next_obst_col_idx)
-                    .unwrap_or(&(vec_size.1 + 1));
+                let next_obst_col =
+                    find_next_larger(check.unwrap_or(&vec![]), &guard_pos.1, vec_size.1);
                 (guard_pos.0, next_obst_col - 1)
             }
             2 => {
                 let check = obst_col_new.get(&guard_pos.1);
-                let next_obst_row_idx = check
-                    .unwrap_or(&vec![])
-                    .binary_search(&guard_pos.0)
-                    .unwrap_or_else(|e| e);
-                let next_obst_row = *check
-                    .unwrap_or(&vec![])
-                    .get(next_obst_row_idx)
-                    .unwrap_or(&(vec_size.0 + 1));
+                let next_obst_row =
+                    find_next_larger(check.unwrap_or(&vec![]), &guard_pos.0, vec_size.0);
                 (next_obst_row - 1, guard_pos.1)
             }
             3 => {
                 let check = obst_row_new.get(&guard_pos.0);
-                let next_obst_col_idx = check
-                    .unwrap_or(&vec![])
-                    .binary_search(&guard_pos.1)
-                    .unwrap_or_else(|e| e);
-                let next_obst_col = *check
-                    .unwrap_or(&vec![])
-                    .get(next_obst_col_idx - 1)
-                    .unwrap_or(&(usize::MAX - 1));
-                (guard_pos.0, next_obst_col.wrapping_add(1))
+                let next_obst_col =
+                    find_next_smaller(check.unwrap_or(&vec![]), &guard_pos.1, usize::MAX - 1);
+                (guard_pos.0, next_obst_col + 1)
             }
             _ => {
                 unreachable!()
             }
         };
 
-        cur_dir_idx = (cur_dir_idx + 1) % 4;
         if next_pos.0 >= vec_size.0 || next_pos.1 >= vec_size.1 {
             return false;
         }
+        cur_dir_idx = (cur_dir_idx + 1) % 4;
         if guard_been_new_dir.contains(&(next_pos, cur_dir_idx)) {
             return true;
         }
+
         guard_been_new_dir.insert((next_pos, cur_dir_idx));
         guard_pos = next_pos;
     }
