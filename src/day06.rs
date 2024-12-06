@@ -81,6 +81,7 @@ fn check_loop(
     if extra_obst == guard_orig_start {
         return false;
     }
+    // println!("Checking {:?}", extra_obst);
     let mut guard_been_new_dir = HashSet::new();
     let mut obst_row_new = obstacle_per_row.clone();
     let mut obst_col_new = obstacle_per_col.clone();
@@ -162,6 +163,9 @@ fn part2(input: &str) -> i32 {
             }
         }
     }
+    
+    // println!("{:?}",obstacle_per_col.values().map(|x| x.len()).max().unwrap() );
+    // println!("{:?}",obstacle_per_row.values().map(|x| x.len()).max().unwrap() );
     obstacle_per_col
         .values_mut()
         .for_each(|x| x.sort_unstable());
@@ -170,17 +174,16 @@ fn part2(input: &str) -> i32 {
         .for_each(|x| x.sort_unstable());
     let guard_orig_start = guard_pos.clone();
     let mut guard_been = HashSet::new();
-    guard_been.insert(guard_pos);
     let dirs = [(usize::MAX, 0), (0, 1), (1, 0), (0, usize::MAX)];
     let mut cur_dir = dirs[0];
     let mut cur_dir_idx = 0;
-
+    guard_been.insert(guard_pos);
     loop {
         let mut next_pos = (
             guard_pos.0.wrapping_add(cur_dir.0),
             guard_pos.1.wrapping_add(cur_dir.1),
         );
-        if orig_obstacles.contains(&next_pos) {
+        while orig_obstacles.contains(&next_pos) {
             cur_dir_idx = (cur_dir_idx + 1) % 4;
             cur_dir = dirs[cur_dir_idx];
             next_pos = (
