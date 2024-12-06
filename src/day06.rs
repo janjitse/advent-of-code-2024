@@ -201,7 +201,7 @@ fn part2(input: &str) -> i32 {
         guard_pos = next_pos;
     }
     let nr_loops = guard_been
-        .iter()
+        .par_iter()
         .filter(|&x| {
             check_loop(
                 x,
