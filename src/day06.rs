@@ -62,7 +62,7 @@ fn find_next_larger(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usi
 
 fn find_next_smaller(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
     let smaller_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
-    let smaller_val = *sorted_vec.get(smaller_idx - 1).unwrap_or(&default);
+    let smaller_val = *sorted_vec.get(smaller_idx.wrapping_sub(1)).unwrap_or(&default);
     return smaller_val;
 }
 
