@@ -1,6 +1,7 @@
-use rayon::prelude::*;
+use std::time::SystemTime;
 
 fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
+    let time_start = SystemTime::now();
     let mut lines = input.lines();
     let output1 = lines
         .by_ref()
@@ -15,6 +16,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
             (left, right)
         })
         .collect();
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     return output1;
 }
 
@@ -51,7 +53,7 @@ fn part1(input: &str) -> u64 {
 fn part1_rec(input: &str) -> u64 {
     let s = parse(input);
     let output = s
-        .into_par_iter()
+        .into_iter()
         .filter(|(target, todo_vec)| recurse_part_a(*target, todo_vec))
         .map(|(target, _)| target)
         .sum();
@@ -78,7 +80,6 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
             return true
         }
     }
-
     return recurse_part_a(target - next_trial, todo_vec_new);
 }
 
