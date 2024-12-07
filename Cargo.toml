@@ -8,6 +8,7 @@ authors = ["Jan Jitse <janjitse@gmail.com>"]
 aoc-runner = "*"
 aoc-runner-derive = "*"
 fxhash = "0.2.1"
+itertools = "0.13.0"
 rayon = "1.10.0"
 regex = "1.11.1"
 
