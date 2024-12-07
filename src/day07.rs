@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
     let mut lines = input.lines();
     let output1 = lines
@@ -16,7 +18,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
     return output1;
 }
 
-#[aoc(day7, part1)]
+// #[aoc(day7, part1)]
 fn part1(input: &str) -> u64 {
     let s = parse(input);
     let mut output = 0;
@@ -49,7 +51,7 @@ fn part1(input: &str) -> u64 {
 fn part1_rec(input: &str) -> u64 {
     let s = parse(input);
     let output = s
-        .into_iter()
+        .into_par_iter()
         .filter(|(target, todo_vec)| recurse_part_a(*target, todo_vec))
         .map(|(target, _)| target)
         .sum();
@@ -64,12 +66,19 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
     if *next_trial > target {
         return false;
     }
-    if target % next_trial == 0 {
-        let multi_pos = recurse_part_a(target / next_trial, todo_vec_new);
-        if multi_pos {
-            return true;
+    if *next_trial > 0 {
+        if target % next_trial == 0 {
+            let multi_pos = recurse_part_a(target / next_trial, todo_vec_new);
+            if multi_pos {
+                return true;
+            }
+        }
+    } else {
+        if target == 0 {
+            return true
         }
     }
+
     return recurse_part_a(target - next_trial, todo_vec_new);
 }
 
@@ -92,10 +101,16 @@ fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
     if *next_trial > target {
         return false;
     }
-    if target % next_trial == 0 {
-        let can_do = recurse_part_b(target / next_trial, todo_vec_new);
-        if can_do {
-            return true;
+    if *next_trial > 0 {
+        if target % next_trial == 0 {
+            let can_do = recurse_part_b(target / next_trial, todo_vec_new);
+            if can_do {
+                return true;
+            }
+        }
+    } else {
+        if target == 0 {
+            return true
         }
     }
     let trial_length = 10u64.pow(next_trial.checked_ilog10().unwrap_or(0) + 1);
@@ -117,7 +132,7 @@ fn generate_ternary(mut nr: u64, length: usize) -> Vec<u64> {
     return output;
 }
 
-#[aoc(day7, part2)]
+// #[aoc(day7, part2)]
 fn part2(input: &str) -> u64 {
     let s = parse(input);
     let mut output = 0;
@@ -185,5 +200,11 @@ mod tests {
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part2_rec(&contents), 11387);
+    }
+
+    #[test]
+    fn test_2_rec_edge() {
+        let contents = "31435833265: 7 691 3 754 14 56 8 59 81 950 923 1 530 3 35 233 514 1 92 44 0 168 31 4 268 47 23 6 4 3 318 9 41 0 6 2 28 1 98 1 8 443 8 54 41 4 25 729 7 82 341 2 5 825";
+        assert_eq!(part1_rec(&contents),31435833265)
     }
 }
