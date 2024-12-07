@@ -34,9 +34,9 @@ fn part1(input: &str) -> u64 {
                     1 => outcome *= todo_vec[idx + 1],
                     _ => {}
                 }
-            }
-            if outcome > target {
-                break;
+                if outcome > target {
+                    break;
+                }
             }
             if outcome == target {
                 output += target;
@@ -45,6 +45,69 @@ fn part1(input: &str) -> u64 {
         }
     }
     return output;
+}
+
+#[aoc(day7, part1, recurse)]
+fn part1_rec(input: &str) -> u64 {
+    let s = parse(input);
+    let output = s
+        .into_iter()
+        .filter(|(target, todo_vec)| recurse_part_a(*target, todo_vec))
+        .map(|(target, _)| target)
+        .sum();
+    return output;
+}
+
+fn recurse_part_a(target: u64, todo_vec: &Vec<u64>) -> bool {
+    if todo_vec.len() == 1 {
+        return todo_vec[0] == target;
+    } else if todo_vec[todo_vec.len() - 1] > target {
+        return false;
+    }
+    let mut todo_new = todo_vec.clone();
+    let next_trial = todo_new.pop().unwrap();
+    if target % next_trial == 0 {
+        let multi_pos = recurse_part_a(target / next_trial, &todo_new);
+        if multi_pos {
+            return true;
+        }
+    }
+    return recurse_part_a(target - next_trial, &todo_new);
+}
+
+#[aoc(day7, part2, recurse)]
+fn part2_rec(input: &str) -> u64 {
+    let s = parse(input);
+    let output = s
+        .into_iter()
+        .filter(|(target, todo_vec)| recurse_part_b(*target, todo_vec))
+        .map(|(target, _)| target)
+        .sum();
+    return output;
+}
+
+fn recurse_part_b(target: u64, todo_vec: &Vec<u64>) -> bool {
+    if todo_vec.len() == 1 {
+        return todo_vec[0] == target;
+    } else if todo_vec[todo_vec.len() - 1] > target {
+        return false;
+    }
+    let mut todo_new = todo_vec.clone();
+    let next_trial = todo_new.pop().unwrap();
+    if target % next_trial == 0 {
+        let can_do = recurse_part_b(target / next_trial, &todo_new);
+        if can_do {
+            return true;
+        }
+    }
+    let trial_length = next_trial.checked_ilog10().unwrap_or(0) + 1;
+    if target % (10 as u64).pow(trial_length) == next_trial {
+        let can_do = recurse_part_b(target/(10 as u64).pow(trial_length), &todo_new);
+        if can_do {
+            return true;
+        } 
+    }
+    return recurse_part_b(target - next_trial, &todo_new);
 }
 
 fn generate_ternary(mut nr: u64, length: usize) -> Vec<u64> {
@@ -86,7 +149,6 @@ fn part2(input: &str) -> u64 {
             }
         }
     }
-
     return output;
 }
 
@@ -104,10 +166,26 @@ mod tests {
     }
 
     #[test]
+    fn test_1_rec() {
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1_rec(&contents), 3749);
+    }
+
+    #[test]
     fn test_2() {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part2(&contents), 11387);
+    }
+
+    #[test]
+    fn test_2_rec() {
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2_rec(&contents), 11387);
     }
 }
