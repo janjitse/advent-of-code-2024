@@ -1,11 +1,10 @@
 fn parse(input: &str) -> Vec<Vec<char>> {
     let mut lines = input.lines();
-    let output1 = lines
+    lines
         .by_ref()
         .take_while(|line| !line.is_empty())
         .map(|line| line.chars().collect::<Vec<char>>())
-        .collect();
-    return output1;
+        .collect()
 }
 
 use fxhash::FxHashSet;
@@ -51,21 +50,19 @@ fn part1(input: &str) -> i32 {
         guard_been.insert(next_pos);
         guard_pos = next_pos;
     }
-    return guard_been.len() as i32;
+    guard_been.len() as i32
 }
 
-fn find_next_larger(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
+fn find_next_larger(sorted_vec: &[usize], val: &usize, default: usize) -> usize {
     let larger_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
-    let larger_val = *sorted_vec.get(larger_idx).unwrap_or(&(default + 1));
-    return larger_val;
+    *sorted_vec.get(larger_idx).unwrap_or(&(default + 1))
 }
 
-fn find_next_smaller(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
+fn find_next_smaller(sorted_vec: &[usize], val: &usize, default: usize) -> usize {
     let smaller_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
-    let smaller_val = *sorted_vec
+    *sorted_vec
         .get(smaller_idx.wrapping_sub(1))
-        .unwrap_or(&default);
-    return smaller_val;
+        .unwrap_or(&default)
 }
 
 fn insert_sorted(sorted_vec: &mut Vec<usize>, val: usize) {
@@ -76,8 +73,8 @@ fn insert_sorted(sorted_vec: &mut Vec<usize>, val: usize) {
 fn check_loop(
     extra_obst: &(usize, usize),
     guard_orig_start: &(usize, usize),
-    obstacle_per_row: &Vec<Vec<usize>>,
-    obstacle_per_col: &Vec<Vec<usize>>,
+    obstacle_per_row: &[Vec<usize>],
+    obstacle_per_col: &[Vec<usize>],
     vec_size: &(usize, usize),
 ) -> bool {
     if extra_obst == guard_orig_start {
@@ -85,12 +82,12 @@ fn check_loop(
     }
     // println!("Checking {:?}", extra_obst);
     let mut guard_been_new_dir = FxHashSet::default();
-    let mut obst_row_new = obstacle_per_row.clone();
-    let mut obst_col_new = obstacle_per_col.clone();
+    let mut obst_row_new = obstacle_per_row.to_owned();
+    let mut obst_col_new = obstacle_per_col.to_owned();
     insert_sorted(&mut obst_row_new[extra_obst.0], extra_obst.1);
     insert_sorted(&mut obst_col_new[extra_obst.1], extra_obst.0);
 
-    let mut guard_pos = guard_orig_start.clone();
+    let mut guard_pos = *guard_orig_start;
     let mut cur_dir_idx = 0;
     guard_been_new_dir.insert((guard_pos, cur_dir_idx));
 
@@ -147,13 +144,12 @@ fn part2(input: &str) -> i32 {
     let mut obstacle_per_row = vec![vec![]; vec_size.0];
     let mut obstacle_per_col = vec![vec![]; vec_size.1];
     for x in 0..vec1.len() {
-        for y in 0..vec1[0].len() {
-            if vec1[x][y] == '#' {
+        for (y, &c) in vec1[x].iter().enumerate() {
+            if c == '#' {
                 orig_obstacles.insert((x, y));
                 obstacle_per_row[x].push(y);
                 obstacle_per_col[y].push(x);
-            }
-            if vec1[x][y] == '^' {
+            } else if c == '^' {
                 guard_pos = (x, y);
             }
         }
@@ -167,7 +163,7 @@ fn part2(input: &str) -> i32 {
     for subvec in obstacle_per_row.iter_mut() {
         subvec.sort_unstable();
     }
-    let guard_orig_start = guard_pos.clone();
+    let guard_orig_start = guard_pos;
     let mut guard_been = FxHashSet::default();
     let dirs = [(usize::MAX, 0), (0, 1), (1, 0), (0, usize::MAX)];
     let mut cur_dir = dirs[0];
@@ -192,7 +188,7 @@ fn part2(input: &str) -> i32 {
         guard_been.insert(next_pos);
         guard_pos = next_pos;
     }
-    let nr_loops = guard_been
+    guard_been
         .par_iter()
         .filter(|&x| {
             check_loop(
@@ -203,8 +199,7 @@ fn part2(input: &str) -> i32 {
                 &vec_size,
             )
         })
-        .count() as i32;
-    return nr_loops;
+        .count() as i32
 }
 
 #[cfg(test)]

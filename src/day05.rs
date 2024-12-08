@@ -18,7 +18,7 @@ fn parse(input: &str) -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
                 .collect::<Vec<i32>>()
         })
         .collect();
-    return (output1, output2);
+    (output1, output2)
 }
 
 use fxhash::{FxHashMap, FxHashSet};
@@ -58,7 +58,7 @@ fn part1(input: &str) -> i32 {
             output += y[mid_idx];
         }
     }
-    return output;
+    output
 }
 
 use std::cmp::Ordering;
@@ -128,7 +128,7 @@ fn part2(input: &str) -> i32 {
                 .1;
         }
     }
-    return output;
+    output
 }
 
 #[cfg(test)]

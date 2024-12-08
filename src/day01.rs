@@ -5,12 +5,10 @@ pub fn part_a(contents: &str) -> i32 {
     let (mut vec1, mut vec2) = parse(contents);
     vec1.sort_unstable();
     vec2.sort_unstable();
-    let total = vec1
-        .into_iter()
+    vec1.into_iter()
         .zip(vec2)
         .map(|(x1, x2)| (x1 - x2).abs())
-        .sum();
-    return total;
+        .sum()
 }
 
 #[aoc(day1, part2)]
@@ -20,11 +18,9 @@ pub fn part_b(contents: &str) -> u64 {
     for val2 in vec2.into_iter() {
         *counter.entry(val2).or_insert(0) += 1;
     }
-    let total2 = vec1
-        .iter()
+    vec1.iter()
         .map(|x| *counter.get(x).unwrap_or(&0) as u64 * *x as u64)
-        .sum();
-    return total2;
+        .sum()
 }
 
 pub fn parse(contents: &str) -> (Vec<i32>, Vec<i32>) {
@@ -34,7 +30,7 @@ pub fn parse(contents: &str) -> (Vec<i32>, Vec<i32>) {
         .collect();
     let vec1 = vec.iter().step_by(2).cloned().collect();
     let vec2 = vec.iter().skip(1).step_by(2).cloned().collect();
-    return (vec1, vec2);
+    (vec1, vec2)
 }
 
 #[cfg(test)]

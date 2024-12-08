@@ -2,9 +2,7 @@ use regex::Regex;
 
 #[aoc(day3, part1)]
 pub fn part1(input: &str) -> i32 {
-    let p = parse(input);
-    let outcome = p.iter().map(|x| x[0] * x[1]).sum();
-    return outcome;
+    parse(input).iter().map(|x| x[0] * x[1]).sum()
 }
 
 #[aoc(day3, part2)]
@@ -18,7 +16,7 @@ pub fn part2(input: &str) -> i32 {
             outcome += mul[0] * mul[1];
         }
     }
-    return outcome;
+    outcome
 }
 
 #[aoc(day3, part2, cleaner)]
@@ -44,7 +42,7 @@ pub fn part2_cleaner(input: &str) -> i64 {
             _ => {}
         }
     }
-    return output;
+    output
 }
 
 fn parse(input: &str) -> Vec<Vec<i32>> {
@@ -58,7 +56,7 @@ fn parse(input: &str) -> Vec<Vec<i32>> {
             output.push(vec![left, right]);
         }
     }
-    return output;
+    output
 }
 
 fn parse_b(input: &str) -> (Vec<Vec<i32>>, Vec<usize>, Vec<usize>, Vec<usize>) {
@@ -89,7 +87,7 @@ fn parse_b(input: &str) -> (Vec<Vec<i32>>, Vec<usize>, Vec<usize>, Vec<usize>) {
         let right: i32 = z.parse().unwrap();
         output.push(vec![left, right]);
     }
-    return (output, do_pos, dont_pos, mul_pos);
+    (output, do_pos, dont_pos, mul_pos)
 }
 
 #[cfg(test)]

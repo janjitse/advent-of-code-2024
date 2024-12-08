@@ -1,6 +1,5 @@
 fn parse(input: &str) -> Vec<Vec<char>> {
-    let output = input.lines().map(|l| l.chars().collect()).collect();
-    return output;
+    input.lines().map(|l| l.chars().collect()).collect()
 }
 
 #[aoc(day4, part1)]
@@ -25,14 +24,14 @@ fn part1(input: &str) -> i32 {
                     let mut test: Vec<char> = vec![];
                     let mut pos_x = start_x;
                     let mut pos_y = start_y;
-                    for idx in 0..3 {
+                    for &mas_char in mas_vec.iter() {
                         pos_x = pos_x.wrapping_add(dir.0);
                         pos_y = pos_y.wrapping_add(dir.1);
                         if pos_x >= vec_c.len() || pos_y >= vec_c[0].len() {
                             break;
                         }
                         let test_c = vec_c[pos_x][pos_y];
-                        if test_c == mas_vec[idx] {
+                        if test_c == mas_char {
                             test.push(test_c);
                         } else {
                             break;
@@ -45,7 +44,7 @@ fn part1(input: &str) -> i32 {
             }
         }
     }
-    return total;
+    total
 }
 
 #[aoc(day4, part2)]
@@ -81,7 +80,7 @@ fn part2(input: &str) -> i32 {
             }
         }
     }
-    return total;
+    total
 }
 
 #[cfg(test)]

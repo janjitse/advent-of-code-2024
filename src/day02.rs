@@ -1,11 +1,9 @@
 #[aoc(day2, part1)]
 pub fn part_a(contents: &str) -> i32 {
-    let todo = parse(contents);
-    let total_safe = todo
+    parse(contents)
         .iter()
         .filter(|&t| check_all_descending(t) || check_all_ascending(t))
-        .count() as i32;
-    return total_safe;
+        .count() as i32
 }
 
 #[aoc(day2, part2, brute_force)]
@@ -32,27 +30,25 @@ pub fn part_b(contents: &str) -> i32 {
             total_safe += 1;
         }
     }
-    return total_safe;
+    total_safe
 }
 
 #[aoc(day2, part2, recursing)]
 pub fn part_b_recur(contents: &str) -> i32 {
-    let todo = parse(contents);
-    let total_safe = todo
+    parse(contents)
         .iter()
         .filter(|&t| {
             check_all_descending_rec(t, 1)
-                || check_all_descending_rec(&t.iter().map(|x| *x).rev().collect::<Vec<i32>>(), 1)
+                || check_all_descending_rec(&t.iter().copied().rev().collect::<Vec<i32>>(), 1)
         })
-        .count() as i32;
-    return total_safe;
+        .count() as i32
 }
 
-fn check_all_descending_rec(t: &Vec<i32>, mistakes_allowed: i32) -> bool {
+fn check_all_descending_rec(t: &[i32], mistakes_allowed: i32) -> bool {
     for (idx, w) in t.windows(2).enumerate() {
         if !((1 <= w[1] - w[0]) && (w[1] - w[0] <= 3)) {
             if mistakes_allowed > 0 {
-                let mut orig_t = (*t).clone();
+                let mut orig_t = (*t).to_owned();
                 let mut safe = false;
                 for removal in [0, 1] {
                     let removed = orig_t.remove(idx + removal);
@@ -65,37 +61,36 @@ fn check_all_descending_rec(t: &Vec<i32>, mistakes_allowed: i32) -> bool {
             }
         }
     }
-    return true;
+    true
 }
 
-fn check_all_descending(t: &Vec<i32>) -> bool {
+fn check_all_descending(t: &[i32]) -> bool {
     for w in t.windows(2) {
         if w[0] <= w[1] || w[0] - 4 >= w[1] {
             return false;
         }
     }
-    return true;
+    true
 }
 
-fn check_all_ascending(t: &Vec<i32>) -> bool {
+fn check_all_ascending(t: &[i32]) -> bool {
     for w in t.windows(2) {
         if w[0] >= w[1] || w[1] - 4 >= w[0] {
             return false;
         }
     }
-    return true;
+    true
 }
 
 pub fn parse(contents: &str) -> Vec<Vec<i32>> {
-    let output: Vec<Vec<i32>> = contents
+    contents
         .lines()
         .map(|x| {
             x.split_ascii_whitespace()
                 .map(|x| x.parse().unwrap())
                 .collect()
         })
-        .collect();
-    return output;
+        .collect()
 }
 
 #[cfg(test)]

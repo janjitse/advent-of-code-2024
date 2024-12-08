@@ -8,8 +8,8 @@ fn parse(input: &str) -> Vec<Vec<char>> {
         .take_while(|line| !line.is_empty())
         .map(|line| line.chars().collect())
         .collect();
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
-    return output1;
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    output1
 }
 
 use fxhash::{FxHashMap, FxHashSet};
@@ -22,7 +22,7 @@ fn part1(input: &str) -> i32 {
         for col_idx in 0..x[0].len() {
             if x[row_idx][col_idx] != '.' {
                 let c = x[row_idx][col_idx];
-                signals.entry(c).or_insert(vec![]).push((row_idx, col_idx));
+                signals.entry(c).or_default().push((row_idx, col_idx));
             }
         }
     }
@@ -42,7 +42,7 @@ fn part1(input: &str) -> i32 {
             }
         }
     }
-    return antipodes.len() as i32;
+    antipodes.len() as i32
 }
 
 #[aoc(day8, part2)]
@@ -53,7 +53,7 @@ fn part2(input: &str) -> i32 {
         for col_idx in 0..x[0].len() {
             if x[row_idx][col_idx] != '.' {
                 let c = x[row_idx][col_idx];
-                signals.entry(c).or_insert(vec![]).push((row_idx, col_idx));
+                signals.entry(c).or_default().push((row_idx, col_idx));
             }
         }
     }
@@ -97,7 +97,7 @@ fn part2(input: &str) -> i32 {
     //     }
     //     print!("\n");
     // }
-    return antipodes.len() as i32;
+    antipodes.len() as i32
 }
 
 fn gcd(mut n: isize, mut m: isize) -> isize {

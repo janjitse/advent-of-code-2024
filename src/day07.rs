@@ -17,7 +17,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
         })
         .collect();
     println!("Parsing: {:?}", time_start.elapsed().unwrap());
-    return output1;
+    output1
 }
 
 // #[aoc(day7, part1)]
@@ -46,18 +46,16 @@ fn part1(input: &str) -> u64 {
             }
         }
     }
-    return output;
+    output
 }
 
 #[aoc(day7, part1, recurse)]
 fn part1_rec(input: &str) -> u64 {
-    let s = parse(input);
-    let output = s
+    parse(input)
         .into_iter()
         .filter(|(target, todo_vec)| recurse_part_a(*target, todo_vec))
         .map(|(target, _)| target)
-        .sum();
-    return output;
+        .sum()
 }
 
 fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
@@ -80,20 +78,17 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
             return true;
         }
     }
-    return recurse_part_a(target - next_trial, todo_vec_new);
+    recurse_part_a(target - next_trial, todo_vec_new)
 }
 
 #[aoc(day7, part2, recurse)]
 fn part2_rec(input: &str) -> u64 {
-    let s = parse(input);
-    let output = s
+    parse(input)
         .into_iter()
         .filter(|(target, todo_vec)| recurse_part_b(*target, todo_vec))
         .map(|(target, _)| target)
-        .sum();
-    return output;
+        .sum()
 }
-
 fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
     if todo_vec.len() == 1 {
         return todo_vec[0] == target;
@@ -121,16 +116,16 @@ fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
             return true;
         }
     }
-    return recurse_part_b(target - next_trial, todo_vec_new);
+    recurse_part_b(target - next_trial, todo_vec_new)
 }
 
 fn generate_ternary(mut nr: u64, length: usize) -> Vec<u64> {
     let mut output = vec![];
     for _ in 0..length {
         output.push(nr % 3);
-        nr = nr / 3;
+        nr /= 3;
     }
-    return output;
+    output
 }
 
 // #[aoc(day7, part2)]
@@ -138,7 +133,7 @@ fn part2(input: &str) -> u64 {
     let s = parse(input);
     let mut output = 0;
     for (target, todo_vec) in s {
-        let comb = (3 as u64).pow(todo_vec.len() as u32 - 1);
+        let comb = 3u64.pow(todo_vec.len() as u32 - 1);
         for trial in 0..comb {
             let trial_digits: Vec<u64> = generate_ternary(trial, todo_vec.len() - 1);
             let mut outcome = todo_vec[0];
@@ -163,7 +158,7 @@ fn part2(input: &str) -> u64 {
             }
         }
     }
-    return output;
+    output
 }
 
 #[cfg(test)]
