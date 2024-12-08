@@ -14,4 +14,3 @@ regex = "1.11.1"
 
 [profile.release]
 strip = "debuginfo"
-lto = "thin"
