@@ -77,7 +77,7 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
         }
     } else {
         if target == 0 {
-            return true
+            return true;
         }
     }
     return recurse_part_a(target - next_trial, todo_vec_new);
@@ -111,7 +111,7 @@ fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
         }
     } else {
         if target == 0 {
-            return true
+            return true;
         }
     }
     let trial_length = 10u64.pow(next_trial.checked_ilog10().unwrap_or(0) + 1);
@@ -206,6 +206,6 @@ mod tests {
     #[test]
     fn test_2_rec_edge() {
         let contents = "31435833265: 7 691 3 754 14 56 8 59 81 950 923 1 530 3 35 233 514 1 92 44 0 168 31 4 268 47 23 6 4 3 318 9 41 0 6 2 28 1 98 1 8 443 8 54 41 4 25 729 7 82 341 2 5 825";
-        assert_eq!(part1_rec(&contents),31435833265)
+        assert_eq!(part1_rec(&contents), 31435833265)
     }
 }

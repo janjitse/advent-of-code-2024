@@ -28,15 +28,19 @@ pub fn part2_cleaner(input: &str) -> i64 {
     let mut output = 0;
     for x in re.captures_iter(input) {
         match &x[1] {
-            "do" => {on = true;},
-            "don't" => {on = false;},
+            "do" => {
+                on = true;
+            }
+            "don't" => {
+                on = false;
+            }
             "mul" => {
                 if on {
                     let left: i32 = x[3].parse().unwrap();
                     let right: i32 = x[4].parse().unwrap();
                     output += (left * right) as i64;
                 }
-            },
+            }
             _ => {}
         }
     }

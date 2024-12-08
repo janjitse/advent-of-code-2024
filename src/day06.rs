@@ -62,7 +62,9 @@ fn find_next_larger(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usi
 
 fn find_next_smaller(sorted_vec: &Vec<usize>, val: &usize, default: usize) -> usize {
     let smaller_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
-    let smaller_val = *sorted_vec.get(smaller_idx.wrapping_sub(1)).unwrap_or(&default);
+    let smaller_val = *sorted_vec
+        .get(smaller_idx.wrapping_sub(1))
+        .unwrap_or(&default);
     return smaller_val;
 }
 
@@ -85,14 +87,8 @@ fn check_loop(
     let mut guard_been_new_dir = FxHashSet::default();
     let mut obst_row_new = obstacle_per_row.clone();
     let mut obst_col_new = obstacle_per_col.clone();
-    insert_sorted(
-        &mut obst_row_new[extra_obst.0],
-        extra_obst.1,
-    );
-    insert_sorted(
-        &mut obst_col_new[extra_obst.1],
-        extra_obst.0,
-    );
+    insert_sorted(&mut obst_row_new[extra_obst.0], extra_obst.1);
+    insert_sorted(&mut obst_col_new[extra_obst.1], extra_obst.0);
 
     let mut guard_pos = guard_orig_start.clone();
     let mut cur_dir_idx = 0;
@@ -102,26 +98,22 @@ fn check_loop(
         let next_pos = match cur_dir_idx {
             0 => {
                 let check = &obst_col_new[guard_pos.1];
-                let next_obst_row =
-                    find_next_smaller(check, &guard_pos.0, usize::MAX - 1);
+                let next_obst_row = find_next_smaller(check, &guard_pos.0, usize::MAX - 1);
                 (next_obst_row + 1, guard_pos.1)
             }
             1 => {
                 let check = &obst_row_new[guard_pos.0];
-                let next_obst_col =
-                    find_next_larger(check, &guard_pos.1, vec_size.1);
+                let next_obst_col = find_next_larger(check, &guard_pos.1, vec_size.1);
                 (guard_pos.0, next_obst_col - 1)
             }
             2 => {
                 let check = &obst_col_new[guard_pos.1];
-                let next_obst_row =
-                    find_next_larger(check, &guard_pos.0, vec_size.0);
+                let next_obst_row = find_next_larger(check, &guard_pos.0, vec_size.0);
                 (next_obst_row - 1, guard_pos.1)
             }
             3 => {
                 let check = &obst_row_new[guard_pos.0];
-                let next_obst_col =
-                    find_next_smaller(check, &guard_pos.1, usize::MAX - 1);
+                let next_obst_col = find_next_smaller(check, &guard_pos.1, usize::MAX - 1);
                 (guard_pos.0, next_obst_col + 1)
             }
             _ => {
@@ -152,8 +144,8 @@ fn part2(input: &str) -> i32 {
     // let mut obstacle_per_row = FxHashMap::default();
     // let mut obstacle_per_col = FxHashMap::default();
     let vec_size = (vec1.len(), vec1[0].len());
-    let mut obstacle_per_row = vec![vec![];vec_size.0];
-    let mut obstacle_per_col = vec![vec![];vec_size.1];
+    let mut obstacle_per_row = vec![vec![]; vec_size.0];
+    let mut obstacle_per_col = vec![vec![]; vec_size.1];
     for x in 0..vec1.len() {
         for y in 0..vec1[0].len() {
             if vec1[x][y] == '#' {
@@ -166,7 +158,7 @@ fn part2(input: &str) -> i32 {
             }
         }
     }
-    
+
     // println!("{:?}",obstacle_per_col.values().map(|x| x.len()).max().unwrap() );
     // println!("{:?}",obstacle_per_row.values().map(|x| x.len()).max().unwrap() );
     for subvec in obstacle_per_col.iter_mut() {
