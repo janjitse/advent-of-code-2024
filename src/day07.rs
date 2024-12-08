@@ -63,9 +63,6 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
         return todo_vec[0] == target;
     }
     let (next_trial, todo_vec_new) = todo_vec.split_last().unwrap();
-    if *next_trial > target {
-        return false;
-    }
     if *next_trial > 0 {
         if target % next_trial == 0 {
             let multi_pos = recurse_part_a(target / next_trial, todo_vec_new);
@@ -87,14 +84,12 @@ fn part2_rec(input: &str) -> u64 {
         .map(|(target, _)| target)
         .sum()
 }
+
 fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
     if todo_vec.len() == 1 {
         return todo_vec[0] == target;
     }
     let (next_trial, todo_vec_new) = todo_vec.split_last().unwrap();
-    if *next_trial > target {
-        return false;
-    }
     if *next_trial > 0 {
         if target % next_trial == 0 {
             let can_do = recurse_part_b(target / next_trial, todo_vec_new);
