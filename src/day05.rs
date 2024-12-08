@@ -26,17 +26,11 @@ use fxhash::{FxHashMap, FxHashSet};
 #[aoc(day5, part1)]
 fn part1(input: &str) -> i32 {
     let (x1, x2) = parse(input);
-    let mut ordering_after = FxHashMap::default();
-    let mut ordering_before = FxHashMap::default();
+    let mut ordering_after: FxHashMap<i32, FxHashSet<i32>> = FxHashMap::default();
+    let mut ordering_before: FxHashMap<i32, FxHashSet<i32>> = FxHashMap::default();
     for x in x1.into_iter() {
-        ordering_after
-            .entry(x[1])
-            .or_insert(FxHashSet::default())
-            .insert(x[0]);
-        ordering_before
-            .entry(x[0])
-            .or_insert(FxHashSet::default())
-            .insert(x[1]);
+        ordering_after.entry(x[1]).or_default().insert(x[0]);
+        ordering_before.entry(x[0]).or_default().insert(x[1]);
     }
     let mut output = 0;
     for y in x2 {
@@ -92,17 +86,11 @@ fn cmp_cust(
 #[aoc(day5, part2)]
 fn part2(input: &str) -> i32 {
     let (x1, mut x2) = parse(input);
-    let mut ordering_after = FxHashMap::default();
-    let mut ordering_before = FxHashMap::default();
+    let mut ordering_after: FxHashMap<i32, FxHashSet<i32>> = FxHashMap::default();
+    let mut ordering_before: FxHashMap<i32, FxHashSet<i32>> = FxHashMap::default();
     for x in x1.into_iter() {
-        ordering_after
-            .entry(x[1])
-            .or_insert(FxHashSet::default())
-            .insert(x[0]);
-        ordering_before
-            .entry(x[0])
-            .or_insert(FxHashSet::default())
-            .insert(x[1]);
+        ordering_after.entry(x[1]).or_default().insert(x[0]);
+        ordering_before.entry(x[0]).or_default().insert(x[1]);
     }
     let mut output = 0;
     for y in x2.iter_mut() {

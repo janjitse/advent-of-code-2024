@@ -16,7 +16,7 @@ pub fn part_b(contents: &str) -> u64 {
     let (vec1, vec2) = parse(contents);
     let mut counter: FxHashMap<i32, u32> = FxHashMap::default();
     for val2 in vec2.into_iter() {
-        *counter.entry(val2).or_insert(0) += 1;
+        *counter.entry(val2).or_default() += 1;
     }
     vec1.iter()
         .map(|x| *counter.get(x).unwrap_or(&0) as u64 * *x as u64)

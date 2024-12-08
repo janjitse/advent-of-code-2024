@@ -73,10 +73,8 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
                 return true;
             }
         }
-    } else {
-        if target == 0 {
-            return true;
-        }
+    } else if target == 0 {
+        return true;
     }
     recurse_part_a(target - next_trial, todo_vec_new)
 }
@@ -104,10 +102,8 @@ fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
                 return true;
             }
         }
-    } else {
-        if target == 0 {
-            return true;
-        }
+    } else if target == 0 {
+        return true;
     }
     let trial_length = 10u64.pow(next_trial.checked_ilog10().unwrap_or(0) + 1);
     if target % trial_length == *next_trial {
