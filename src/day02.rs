@@ -1,10 +1,8 @@
-use rayon::prelude::*;
-
 #[aoc(day2, part1)]
 pub fn part_a(contents: &str) -> i32 {
     let todo = parse(contents);
     let total_safe = todo
-        .par_iter()
+        .iter()
         .filter(|&t| check_all_descending(t) || check_all_ascending(t))
         .count() as i32;
     return total_safe;
@@ -41,13 +39,10 @@ pub fn part_b(contents: &str) -> i32 {
 pub fn part_b_recur(contents: &str) -> i32 {
     let todo = parse(contents);
     let total_safe = todo
-        .par_iter()
+        .iter()
         .filter(|&t| {
             check_all_descending_rec(t, 1)
-                || check_all_descending_rec(
-                    &t.iter().map(|x| *x).rev().collect::<Vec<i32>>(),
-                    1,
-                )
+                || check_all_descending_rec(&t.iter().map(|x| *x).rev().collect::<Vec<i32>>(), 1)
         })
         .count() as i32;
     return total_safe;
@@ -76,7 +71,7 @@ fn check_all_descending_rec(t: &Vec<i32>, mistakes_allowed: i32) -> bool {
 fn check_all_descending(t: &Vec<i32>) -> bool {
     for w in t.windows(2) {
         if w[0] <= w[1] || w[0] - 4 >= w[1] {
-            return false
+            return false;
         }
     }
     return true;
@@ -85,7 +80,7 @@ fn check_all_descending(t: &Vec<i32>) -> bool {
 fn check_all_ascending(t: &Vec<i32>) -> bool {
     for w in t.windows(2) {
         if w[0] >= w[1] || w[1] - 4 >= w[0] {
-            return false
+            return false;
         }
     }
     return true;
@@ -93,7 +88,7 @@ fn check_all_ascending(t: &Vec<i32>) -> bool {
 
 pub fn parse(contents: &str) -> Vec<Vec<i32>> {
     let output: Vec<Vec<i32>> = contents
-        .par_lines()
+        .lines()
         .map(|x| {
             x.split_ascii_whitespace()
                 .map(|x| x.parse().unwrap())
