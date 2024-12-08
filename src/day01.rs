@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap;
 
 #[aoc(day1, part1)]
 pub fn part_a(contents: &str) -> i32 {
@@ -14,15 +14,15 @@ pub fn part_a(contents: &str) -> i32 {
 }
 
 #[aoc(day1, part2)]
-pub fn part_b(contents: &str) -> i32 {
+pub fn part_b(contents: &str) -> u64 {
     let (vec1, vec2) = parse(contents);
-    let mut counter: HashMap<i32, i32> = HashMap::new();
+    let mut counter: FxHashMap<i32, u32> = FxHashMap::default();
     for val2 in vec2.into_iter() {
         *counter.entry(val2).or_insert(0) += 1;
     }
     let total2 = vec1
         .iter()
-        .map(|x| *counter.get(x).unwrap_or(&0) as i32 * *x as i32)
+        .map(|x| *counter.get(x).unwrap_or(&0) as u64 * *x as u64)
         .sum();
     return total2;
 }
