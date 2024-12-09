@@ -14,7 +14,7 @@ fn parse(input: &str) -> Vec<u32> {
 #[aoc(day9, part1)]
 fn part1(input: &str) -> u128 {
     let x = parse(input);
-    let mut checksum_vec = vec![];
+    let mut checksum_vec = Vec::with_capacity(6 * x.len());
     for (idx, file_len) in x.iter().enumerate() {
         if idx % 2 == 0 {
             for _ in 0..*file_len {
@@ -26,11 +26,11 @@ fn part1(input: &str) -> u128 {
             }
         }
     }
-    let mut compacted_vec = vec![];
+    let mut output = 0;
     let mut backpointer = checksum_vec.len() - 1;
     for idx in 0..checksum_vec.len() {
         if checksum_vec[idx] >= 0 {
-            compacted_vec.push(checksum_vec[idx]);
+            output += checksum_vec[idx] as u128 * idx as u128;
         } else {
             while checksum_vec[backpointer] < 0 {
                 backpointer -= 1;
@@ -38,16 +38,12 @@ fn part1(input: &str) -> u128 {
             if backpointer <= idx {
                 break;
             }
-            compacted_vec.push(checksum_vec[backpointer]);
+            output += idx as u128 * checksum_vec[backpointer] as u128;
             backpointer -= 1;
         }
         if backpointer <= idx {
             break;
         }
-    }
-    let mut output = 0;
-    for (idx, val) in compacted_vec.into_iter().enumerate() {
-        output += val as u128 * idx as u128
     }
     output
 }
@@ -142,6 +138,88 @@ fn part2(input: &str) -> u128 {
     checksum
 }
 
+#[derive(Default, Debug)]
+struct File2 {
+    start: usize,
+    len: usize,
+    id: isize,
+}
+
+#[aoc(day9, part2, faster)]
+fn part2_faster(input: &str) -> u128 {
+    let x = parse(input);
+    let mut files: Vec<Vec<File2>> = vec![
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+        Vec::with_capacity(x.len() / 16),
+    ];
+    let mut current_end = 0;
+    let mut empty_spaces: Vec<File2> = Vec::with_capacity(x.len() / 2);
+    for (idx, len) in x.iter().enumerate() {
+        if idx % 2 == 0 {
+            let start = current_end;
+            files[*len as usize - 1].push(File2 {
+                start,
+                len: *len as usize,
+                id: (idx / 2) as isize,
+            });
+            current_end = start + *len as usize;
+        } else {
+            if *len == 0 {
+                continue;
+            }
+            let start = current_end;
+            empty_spaces.push(File2 {
+                start,
+                len: *len as usize,
+                id: -1,
+            });
+            current_end = start + *len as usize;
+        }
+    }
+    let mut output = 0;
+    for mut empty in empty_spaces {
+        while empty.len > 0 {
+            let mut right_most_idx = empty.start;
+            let mut right_most_len = 0;
+            for file_len in 1..=empty.len {
+                if files[file_len - 1]
+                    .last()
+                    .unwrap_or(&File2::default())
+                    .start
+                    > right_most_idx
+                {
+                    right_most_idx = files[file_len - 1].last().unwrap().start;
+                    right_most_len = file_len;
+                }
+            }
+            if right_most_idx == empty.start {
+                break;
+            }
+            let file_to_remove = files[right_most_len - 1].pop().unwrap();
+            output += file_to_remove.id as u128
+                * ((empty.start * file_to_remove.len) as u128
+                    + (file_to_remove.len * file_to_remove.len - file_to_remove.len) as u128 / 2);
+            empty.len -= file_to_remove.len;
+            empty.start += file_to_remove.len;
+        }
+    }
+    for len_rem in files {
+        for file_rem in len_rem {
+            output += file_rem.id as u128
+                * ((file_rem.start * file_rem.len) as u128
+                    + (file_rem.len * file_rem.len - file_rem.len) as u128 / 2);
+        }
+    }
+    output
+}
+
 fn find_next_free(
     file_len: usize,
     freespaces: &mut [BinaryHeap<File>],
@@ -177,6 +255,14 @@ mod tests {
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part1(&contents), 1928);
+    }
+
+    #[test]
+    fn test_2_f() {
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2_faster(&contents), 2858);
     }
 
     #[test]
