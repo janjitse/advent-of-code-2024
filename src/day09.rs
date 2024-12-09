@@ -68,15 +68,15 @@ fn part2(input: &str) -> u128 {
     let mut files: Vec<File> = vec![];
     let mut current_end = 0;
     let mut freespaces: [BinaryHeap<File>; 9] = [
-        BinaryHeap::new(), // 1
-        BinaryHeap::new(), // 2
-        BinaryHeap::new(), // 3
-        BinaryHeap::new(), // 4
-        BinaryHeap::new(), // 5
-        BinaryHeap::new(), // 6
-        BinaryHeap::new(), // 7
-        BinaryHeap::new(), // 8
-        BinaryHeap::new(), // 9
+        BinaryHeap::with_capacity(x.len() / 18), // 1
+        BinaryHeap::with_capacity(x.len() / 18), // 2
+        BinaryHeap::with_capacity(x.len() / 18), // 3
+        BinaryHeap::with_capacity(x.len() / 18), // 4
+        BinaryHeap::with_capacity(x.len() / 18), // 5
+        BinaryHeap::with_capacity(x.len() / 18), // 6
+        BinaryHeap::with_capacity(x.len() / 18), // 7
+        BinaryHeap::with_capacity(x.len() / 18), // 8
+        BinaryHeap::with_capacity(x.len() / 18), // 9
     ];
 
     for (idx, file_len) in x.iter().enumerate() {
@@ -104,7 +104,7 @@ fn part2(input: &str) -> u128 {
         }
     }
 
-    let mut compacted_files: Vec<File> = vec![];
+    let mut compacted_files: Vec<File> = Vec::with_capacity(files.len());
     while let Some(next_file) = files.pop() {
         match find_next_free(
             next_file.end - next_file.start.0,
