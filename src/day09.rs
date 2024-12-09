@@ -1,3 +1,4 @@
+use std::iter;
 use std::time::SystemTime;
 
 fn parse(input: &str) -> Vec<u32> {
@@ -7,7 +8,7 @@ fn parse(input: &str) -> Vec<u32> {
         .chars()
         .map(|c| c.to_digit(10).unwrap())
         .collect::<Vec<u32>>();
-    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
     output1
 }
 
@@ -16,15 +17,11 @@ fn part1(input: &str) -> u128 {
     let x = parse(input);
     let mut checksum_vec = Vec::with_capacity(6 * x.len());
     for (idx, file_len) in x.iter().enumerate() {
-        if idx % 2 == 0 {
-            for _ in 0..*file_len {
-                checksum_vec.push((idx / 2) as isize);
-            }
-        } else {
-            for _ in 0..*file_len {
-                checksum_vec.push(-1);
-            }
-        }
+        let to_push = match idx % 2 {
+            0 => (idx / 2) as isize,
+            _ => -1,
+        };
+        checksum_vec.extend(iter::repeat(to_push).take(*file_len as usize));
     }
     let mut output = 0;
     let mut backpointer = checksum_vec.len() - 1;
@@ -32,11 +29,8 @@ fn part1(input: &str) -> u128 {
         if checksum_vec[idx] >= 0 {
             output += checksum_vec[idx] as u128 * idx as u128;
         } else {
-            while checksum_vec[backpointer] < 0 {
+            while backpointer > idx && checksum_vec[backpointer] < 0 {
                 backpointer -= 1;
-            }
-            if backpointer <= idx {
-                break;
             }
             output += idx as u128 * checksum_vec[backpointer] as u128;
             backpointer -= 1;
@@ -148,7 +142,7 @@ struct File2 {
 #[aoc(day9, part2, faster)]
 fn part2_faster(input: &str) -> u128 {
     let x = parse(input);
-    let mut files: Vec<Vec<File2>> = vec![
+    let mut files = [
         Vec::with_capacity(x.len() / 16),
         Vec::with_capacity(x.len() / 16),
         Vec::with_capacity(x.len() / 16),
@@ -161,27 +155,25 @@ fn part2_faster(input: &str) -> u128 {
     ];
     let mut current_end = 0;
     let mut empty_spaces: Vec<File2> = Vec::with_capacity(x.len() / 2);
-    for (idx, len) in x.iter().enumerate() {
+    for (idx, &len) in x.iter().enumerate() {
+        let start = current_end;
         if idx % 2 == 0 {
-            let start = current_end;
-            files[*len as usize - 1].push(File2 {
+            files[len as usize - 1].push(File2 {
                 start,
-                len: *len as usize,
+                len: len as usize,
                 id: (idx / 2) as isize,
             });
-            current_end = start + *len as usize;
         } else {
-            if *len == 0 {
+            if len == 0 {
                 continue;
             }
-            let start = current_end;
             empty_spaces.push(File2 {
                 start,
-                len: *len as usize,
+                len: len as usize,
                 id: -1,
             });
-            current_end = start + *len as usize;
         }
+        current_end = start + len as usize;
     }
     let mut output = 0;
     for mut empty in empty_spaces {
