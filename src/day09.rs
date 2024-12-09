@@ -12,9 +12,8 @@ fn parse(input: &str) -> Vec<u32> {
 }
 
 #[aoc(day9, part1)]
-fn part1(input: &str) -> u64 {
+fn part1(input: &str) -> u128 {
     let x = parse(input);
-    // let total: u32 = x.iter().sum();
     let mut checksum_vec = vec![];
     for (idx, file_len) in x.iter().enumerate() {
         if idx % 2 == 0 {
@@ -27,7 +26,6 @@ fn part1(input: &str) -> u64 {
             }
         }
     }
-    println!("{:?}", checksum_vec.len());
     let mut compacted_vec = vec![];
     let mut backpointer = checksum_vec.len() - 1;
     for idx in 0..checksum_vec.len() {
@@ -47,134 +45,118 @@ fn part1(input: &str) -> u64 {
             break;
         }
     }
-    // println!("compacted: {:?}", compacted_vec);
     let mut output = 0;
     for (idx, val) in compacted_vec.into_iter().enumerate() {
-        output += val as u64 * idx as u64
+        output += val as u128 * idx as u128
     }
     output
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+use fxhash::FxHashMap;
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 struct File {
-    start: usize,
+    start: Reverse<usize>,
     end: usize,
     id: isize,
 }
 
 #[aoc(day9, part2)]
-fn part2(input: &str) -> u64 {
+fn part2(input: &str) -> u128 {
     let x = parse(input);
     let mut files: Vec<File> = vec![];
-    let mut freespace: Vec<File> = vec![];
+    let mut current_end = 0;
+    let mut freespaces: FxHashMap<usize, BinaryHeap<File>> = FxHashMap::default();
     for (idx, file_len) in x.iter().enumerate() {
         if idx % 2 == 0 {
-            let start = files
-                .last()
-                .unwrap_or(&File {
-                    start: 0,
-                    end: 0,
-                    id: 0,
-                })
-                .end
-                .max(
-                    freespace
-                        .last()
-                        .unwrap_or(&File {
-                            start: 0,
-                            end: 0,
-                            id: 0,
-                        })
-                        .end,
-                );
+            let start = current_end;
             let end = start + *file_len as usize;
             files.push(File {
-                start,
+                start: Reverse(start),
                 end,
                 id: (idx / 2) as isize,
             });
+            current_end = end;
         } else {
             if *file_len == 0 {
                 continue;
             }
-            let start = files
-                .last()
-                .unwrap_or(&File {
-                    start: 0,
-                    end: 0,
-                    id: 0,
-                })
-                .end
-                .max(
-                    freespace
-                        .last()
-                        .unwrap_or(&File {
-                            start: 0,
-                            end: 0,
-                            id: 0,
-                        })
-                        .end,
-                );
+            let start = current_end;
             let end = start + *file_len as usize;
-            freespace.push(File { start, end, id: -1 });
+            freespaces
+                .entry(*file_len as usize)
+                .or_default()
+                .push(File {
+                    start: Reverse(start),
+                    end,
+                    id: -1,
+                });
+            current_end = end;
         }
     }
+
     let mut compacted_files: Vec<File> = vec![];
     while let Some(next_file) = files.pop() {
-        match find_next_free(next_file.end - next_file.start, &freespace, next_file.start) {
+        match find_next_free(
+            next_file.end - next_file.start.0,
+            &mut freespaces,
+            next_file.start.0,
+        ) {
             None => {
                 compacted_files.push(next_file);
             }
-            Some(idx) => {
-                let new_start = freespace[idx].start;
-                let new_end = freespace[idx].start + next_file.end - next_file.start;
+            Some(free_file) => {
                 let new_file = File {
-                    start: new_start,
-                    end: new_end,
+                    start: free_file.start,
+                    end: free_file.start.0 + next_file.end - next_file.start.0,
                     id: next_file.id,
                 };
-                compacted_files.push(new_file);
-                if new_end < freespace[idx].end {
-                    freespace[idx].start = new_end;
-                } else {
-                    freespace.remove(idx);
+                if new_file.end < free_file.end {
+                    let len = free_file.end - new_file.end;
+                    let new_free = File {
+                        start: Reverse(new_file.end),
+                        end: free_file.end,
+                        id: -1,
+                    };
+                    freespaces.entry(len).or_default().push(new_free);
                 }
-                let free_idx = freespace.binary_search(&next_file).unwrap_err();
-                freespace.insert(free_idx, next_file);
-                compact_around(free_idx, &mut freespace);
+                compacted_files.push(new_file);
             }
         }
     }
     let mut checksum = 0;
     for c in compacted_files {
-        for idx in c.start..c.end {
-            checksum += idx as u64 * c.id as u64;
+        for idx in c.start.0..c.end {
+            checksum += idx as u128 * c.id as u128;
         }
     }
     checksum
 }
 
-fn find_next_free(file_len: usize, freespace_vec: &[File], max_start: usize) -> Option<usize> {
-    for (idx, freespace) in freespace_vec.iter().enumerate() {
-        if freespace.start > max_start {
-            return None;
+fn find_next_free(
+    file_len: usize,
+    freespaces: &mut FxHashMap<usize, BinaryHeap<File>>,
+    max_start: usize,
+) -> Option<File> {
+    let mut min_start = usize::MAX;
+    let mut min_start_len = 0;
+    for size in file_len..10 {
+        match freespaces.entry(size).or_default().peek() {
+            None => {}
+            Some(f) => {
+                if f.start.0 < max_start && f.start.0 < min_start {
+                    min_start = f.start.0;
+                    min_start_len = size;
+                }
+            }
         }
-        if freespace.end - freespace.start >= file_len {
-            return Some(idx);
-        }
+    }
+    if min_start < max_start {
+        return freespaces.get_mut(&min_start_len).unwrap().pop();
     }
     None
-}
-
-fn compact_around(idx: usize, freespace_vec: &mut Vec<File>) {
-    if idx < freespace_vec.len() - 1 && freespace_vec[idx + 1].start == freespace_vec[idx].end {
-        freespace_vec[idx].end = freespace_vec[idx + 1].end;
-        freespace_vec.remove(idx + 1);
-    }
-    if idx > 0 && freespace_vec[idx - 1].end == freespace_vec[idx].start {
-        freespace_vec[idx - 1].end = freespace_vec[idx].end;
-        freespace_vec.remove(idx);
-    }
 }
 
 #[cfg(test)]
