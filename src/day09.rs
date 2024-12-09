@@ -52,7 +52,6 @@ fn part1(input: &str) -> u128 {
     output
 }
 
-use fxhash::FxHashMap;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
@@ -68,7 +67,18 @@ fn part2(input: &str) -> u128 {
     let x = parse(input);
     let mut files: Vec<File> = vec![];
     let mut current_end = 0;
-    let mut freespaces: FxHashMap<usize, BinaryHeap<File>> = FxHashMap::default();
+    let mut freespaces: [BinaryHeap<File>; 9] = [
+        BinaryHeap::new(), // 1
+        BinaryHeap::new(), // 2
+        BinaryHeap::new(), // 3
+        BinaryHeap::new(), // 4
+        BinaryHeap::new(), // 5
+        BinaryHeap::new(), // 6
+        BinaryHeap::new(), // 7
+        BinaryHeap::new(), // 8
+        BinaryHeap::new(), // 9
+    ];
+
     for (idx, file_len) in x.iter().enumerate() {
         if idx % 2 == 0 {
             let start = current_end;
@@ -85,14 +95,11 @@ fn part2(input: &str) -> u128 {
             }
             let start = current_end;
             let end = start + *file_len as usize;
-            freespaces
-                .entry(*file_len as usize)
-                .or_default()
-                .push(File {
-                    start: Reverse(start),
-                    end,
-                    id: -1,
-                });
+            freespaces[*file_len as usize - 1].push(File {
+                start: Reverse(start),
+                end,
+                id: -1,
+            });
             current_end = end;
         }
     }
@@ -120,7 +127,7 @@ fn part2(input: &str) -> u128 {
                         end: free_file.end,
                         id: -1,
                     };
-                    freespaces.entry(len).or_default().push(new_free);
+                    freespaces[len - 1].push(new_free);
                 }
                 compacted_files.push(new_file);
             }
@@ -137,13 +144,13 @@ fn part2(input: &str) -> u128 {
 
 fn find_next_free(
     file_len: usize,
-    freespaces: &mut FxHashMap<usize, BinaryHeap<File>>,
+    freespaces: &mut [BinaryHeap<File>],
     max_start: usize,
 ) -> Option<File> {
     let mut min_start = usize::MAX;
     let mut min_start_len = 0;
-    for size in file_len..10 {
-        match freespaces.entry(size).or_default().peek() {
+    for size in file_len..=freespaces.len() {
+        match freespaces[size - 1].peek() {
             None => {}
             Some(f) => {
                 if f.start.0 < max_start && f.start.0 < min_start {
@@ -154,7 +161,7 @@ fn find_next_free(
         }
     }
     if min_start < max_start {
-        return freespaces.get_mut(&min_start_len).unwrap().pop();
+        return freespaces[min_start_len - 1].pop();
     }
     None
 }
