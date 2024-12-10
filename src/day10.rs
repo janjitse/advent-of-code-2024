@@ -8,7 +8,7 @@ fn parse(input: &str) -> Vec<Vec<u32>> {
         .take_while(|line| !line.is_empty())
         .map(|line| line.chars().map(|x| x.to_digit(10).unwrap()).collect())
         .collect();
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     output1
 }
 
@@ -42,7 +42,7 @@ fn part1(input: &str) -> i32 {
                         next_node.1.wrapping_add(dir.1),
                     );
                     if x[cand.0][cand.1] == height + 1 {
-                        if height == 9 {
+                        if height + 1 == 9 {
                             visited.insert(cand);
                         } else {
                             todo.push_back((cand, height + 1));
@@ -83,7 +83,7 @@ fn part2(input: &str) -> u64 {
                         next_node.1.wrapping_add(dir.1),
                     );
                     if x[cand.0][cand.1] == height + 1 {
-                        if height == 9 {
+                        if height + 1 == 9 {
                             output += 1;
                         } else {
                             todo.push_back((cand, height + 1));
