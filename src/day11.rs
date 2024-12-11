@@ -6,7 +6,7 @@ fn parse(input: &str) -> Vec<u64> {
         .split_ascii_whitespace()
         .map(|x| x.parse().unwrap())
         .collect();
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     output1
 }
 
@@ -22,19 +22,19 @@ fn part1(input: &str) -> u64 {
     for _ in 0..25 {
         let mut next_hash = FxHashMap::default();
         for (idx, amount) in hash {
+            let length = idx.checked_ilog10().unwrap_or(0) + 1;
             if idx == 0 {
                 *next_hash.entry(1).or_default() += amount;
-            } else if (idx.checked_ilog10().unwrap_or(0) + 1) % 2 == 0 {
-                let length = idx.checked_ilog10().unwrap_or(0) + 1;
-                *next_hash.entry(idx / 10u64.pow(length / 2)).or_default() += amount;
-                *next_hash.entry(idx % 10u64.pow(length / 2)).or_default() += amount;
+            } else if length % 2 == 0 {
+                let power10 = 10u64.pow(length / 2);
+                *next_hash.entry(idx / power10).or_default() += amount;
+                *next_hash.entry(idx % power10).or_default() += amount;
             } else {
                 *next_hash.entry(idx * 2024).or_default() += amount;
             }
         }
         hash = next_hash;
     }
-    // println!("{:?}", hash);
     let mut total_length = 0;
     for d in hash.values() {
         total_length += d;
@@ -62,12 +62,13 @@ fn recurse_mem(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), u64>)
         return *total;
     }
     let total;
+    let length = idx.checked_ilog10().unwrap_or(0) + 1;
     if idx == 0 {
         total = recurse_mem(blinks_todo - 1, 1, cache);
-    } else if (idx.checked_ilog10().unwrap_or(0) + 1) % 2 == 0 {
-        let length = idx.checked_ilog10().unwrap_or(0) + 1;
-        total = recurse_mem(blinks_todo - 1, idx / 10u64.pow(length / 2), cache)
-            + recurse_mem(blinks_todo - 1, idx % 10u64.pow(length / 2), cache);
+    } else if length % 2 == 0 {
+        let power10 = 10u64.pow(length / 2);
+        total = recurse_mem(blinks_todo - 1, idx / power10, cache)
+            + recurse_mem(blinks_todo - 1, idx % power10, cache);
     } else {
         total = recurse_mem(blinks_todo - 1, idx * 2024, cache);
     }
@@ -85,15 +86,14 @@ fn recurse_dict(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), Coun
         return total.clone();
     }
     let mut total: Counter;
+    let length = idx.checked_ilog10().unwrap_or(0) + 1;
     if idx == 0 {
         total = recurse_dict(blinks_todo - 1, 1, cache);
-    } else if (idx.checked_ilog10().unwrap_or(0) + 1) % 2 == 0 {
-        let length = idx.checked_ilog10().unwrap_or(0) + 1;
-        total = recurse_dict(blinks_todo - 1, idx / 10u64.pow(length / 2), cache);
-        let total2 = recurse_dict(blinks_todo - 1, idx % 10u64.pow(length / 2), cache);
-        for (t_idx, t_amount) in total2 {
-            *total.entry(t_idx).or_default() += t_amount;
-        }
+    } else if length % 2 == 0 {
+        let power10 = 10u64.pow(length / 2);
+        total = recurse_dict(blinks_todo - 1, idx / power10, cache);
+        let total2 = recurse_dict(blinks_todo - 1, idx % power10, cache);
+        total2.into_iter().for_each(|(t_idx, t_amount)| *total.entry(t_idx).or_default() += t_amount);
     } else {
         total = recurse_dict(blinks_todo - 1, idx * 2024, cache);
     }
@@ -135,10 +135,10 @@ fn part2_rec_dict(input: &str) -> u64 {
         *total.entry(d).or_default() += 1;
     }
 
-    for _ in 0..15 {
+    for _ in 0..25 {
         let mut new_hash = Counter::default();
         for (d, orig_amount) in total {
-            for (idx, amount) in recurse_dict(5, d, &mut cache) {
+            for (idx, amount) in recurse_dict(3, d, &mut cache) {
                 *new_hash.entry(idx).or_default() += amount * orig_amount;
             }
         }
@@ -173,12 +173,13 @@ fn part2(input: &str) -> u64 {
     for _ in 0..75 {
         let mut next_hash = FxHashMap::default();
         for (idx, amount) in hash {
+            let length = idx.checked_ilog10().unwrap_or(0) + 1;
             if idx == 0 {
                 *next_hash.entry(1).or_default() += amount;
-            } else if (idx.checked_ilog10().unwrap_or(0) + 1) % 2 == 0 {
-                let length = idx.checked_ilog10().unwrap_or(0) + 1;
-                *next_hash.entry(idx / 10u64.pow(length / 2)).or_default() += amount;
-                *next_hash.entry(idx % 10u64.pow(length / 2)).or_default() += amount;
+            } else if length % 2 == 0 {
+                let power10 = 10u64.pow(length / 2);
+                *next_hash.entry(idx / power10).or_default() += amount;
+                *next_hash.entry(idx % power10).or_default() += amount;
             } else {
                 *next_hash.entry(idx * 2024).or_default() += amount;
             }
