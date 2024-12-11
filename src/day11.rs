@@ -108,9 +108,16 @@ fn part1_rec_dict(input: &str) -> u64 {
     let mut total = Counter::default();
     let mut cache = FxHashMap::default();
     for d in output {
-        for (idx, amount) in recurse_dict(25, d, &mut cache) {
-            *total.entry(idx).or_default() += amount;
+        *total.entry(d).or_default() += 1;
+    }
+    for _ in 0..5 {
+        let mut new_hash = Counter::default();
+        for (d, new_amount) in total {
+            for (idx, amount) in recurse_dict(5, d, &mut cache) {
+                *new_hash.entry(idx).or_default() += amount * new_amount;
+            }
         }
+        total = new_hash;
     }
     let mut output = 0;
     for d in total.values() {
