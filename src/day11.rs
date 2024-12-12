@@ -41,12 +41,8 @@ fn part1(input: &str) -> u64 {
 #[aoc(day11, part1, rec)]
 fn part1_rec(input: &str) -> u64 {
     let output = parse(input);
-    let mut total = 0;
     let mut cache = FxHashMap::default();
-    for d in output {
-        total += recurse_mem(25, d, &mut cache)
-    }
-    total
+    output.into_iter().map(|d|recurse_mem(25, d, &mut cache) ).sum()
 }
 
 fn recurse_mem(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), u64>) -> u64 {
@@ -144,12 +140,8 @@ fn part2_rec_dict(input: &str) -> u64 {
 #[aoc(day11, part2, rec)]
 fn part2_rec(input: &str) -> u64 {
     let output = parse(input);
-    let mut total = 0;
     let mut cache = FxHashMap::default();
-    for d in output {
-        total += recurse_mem(75, d, &mut cache)
-    }
-    total
+    output.into_iter().map(|d|recurse_mem(75, d, &mut cache) ).sum()
 }
 
 #[aoc(day11, part2)]
