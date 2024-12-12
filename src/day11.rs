@@ -35,12 +35,7 @@ fn part1(input: &str) -> u64 {
         }
         hash = next_hash;
     }
-    let mut total_length = 0;
-    for d in hash.values() {
-        total_length += d;
-    }
-
-    total_length
+    hash.values().sum()
 }
 
 #[aoc(day11, part1, rec)]
@@ -121,11 +116,7 @@ fn part1_rec_dict(input: &str) -> u64 {
         }
         total = new_hash;
     }
-    let mut output = 0;
-    for d in total.values() {
-        output += *d;
-    }
-    output
+    total.values().sum()
 }
 
 #[aoc(day11, part2, rec_dict)]
@@ -147,11 +138,7 @@ fn part2_rec_dict(input: &str) -> u64 {
         total = new_hash;
     }
 
-    let mut output = 0;
-    for d in total.values() {
-        output += *d;
-    }
-    output
+    total.values().sum()
 }
 
 #[aoc(day11, part2, rec)]
@@ -188,12 +175,7 @@ fn part2(input: &str) -> u64 {
         }
         hash = next_hash;
     }
-    let mut total_length = 0;
-    for d in hash.values() {
-        total_length += d;
-    }
-
-    total_length
+    hash.values().sum()
 }
 
 #[cfg(test)]
