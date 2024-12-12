@@ -8,7 +8,7 @@ fn parse(input: &str) -> Vec<u32> {
         .chars()
         .map(|c| c.to_digit(10).unwrap())
         .collect::<Vec<u32>>();
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     output1
 }
 

@@ -20,7 +20,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
     output1
 }
 
-// #[aoc(day7, part1)]
+#[aoc(day7, part1, slow)]
 fn part1(input: &str) -> u64 {
     let s = parse(input);
     let mut output = 0;
@@ -119,7 +119,7 @@ fn generate_ternary(mut nr: u64, length: usize) -> Vec<u64> {
     output
 }
 
-// #[aoc(day7, part2)]
+#[aoc(day7, part2, slow)]
 fn part2(input: &str) -> u64 {
     let s = parse(input);
     let mut output = 0;
