@@ -22,7 +22,8 @@ fn generate_regions(mut grid: Vec<Vec<char>>) -> Vec<FxHashSet<(usize, usize)>> 
         for col_idx in 0..width {
             if grid[row_idx][col_idx] != '.' {
                 let current_char = grid[row_idx][col_idx];
-                let current_region = FxHashSet::from_iter(flood_fill(&mut grid, current_char, (row_idx, col_idx)));
+                let current_region =
+                    FxHashSet::from_iter(flood_fill(&mut grid, current_char, (row_idx, col_idx)));
                 regions.push(current_region);
             }
         }
