@@ -14,44 +14,52 @@ fn parse(input: &str) -> Vec<Vec<char>> {
     output1
 }
 
-#[aoc(day12, part1)]
-fn part1(input: &str) -> u64 {
-    let mut x = parse(input);
-    let height = x.len();
-    let width = x[0].len();
+fn generate_regions(mut grid: Vec<Vec<char>>) -> Vec<FxHashSet<(usize, usize)>> {
+    let height = grid.len();
+    let width = grid[0].len();
     let mut regions = vec![];
     for row_idx in 0..height {
         for col_idx in 0..width {
-            if x[row_idx][col_idx] != '.' {
-                let current_char = x[row_idx][col_idx];
-                let current_region = dfs(&x, current_char, (row_idx, col_idx));
+            if grid[row_idx][col_idx] != '.' {
+                let current_char = grid[row_idx][col_idx];
+                let current_region = flood_fill(&grid, current_char, (row_idx, col_idx));
                 for d in current_region.clone().iter() {
-                    x[d.0][d.1] = '.';
+                    grid[d.0][d.1] = '.';
                 }
                 regions.push(current_region);
             }
         }
     }
+    regions
+}
+
+#[aoc(day12, part1)]
+fn part1(input: &str) -> u64 {
+    let x = parse(input);
+    let regions = generate_regions(x);
+
     let mut output = 0;
     for region in regions {
-        let mut area = 0;
+        let area = region.len() as u64;
         let mut perimeter = 0;
         for c in region.iter() {
-            area += 1;
             for dir in [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)] {
                 if !region.contains(&(c.0.wrapping_add(dir.0), c.1.wrapping_add(dir.1))) {
                     perimeter += 1;
                 }
             }
         }
-
         output += area * perimeter;
     }
 
     output
 }
 
-fn dfs(x: &[Vec<char>], cur_char: char, start_loc: (usize, usize)) -> FxHashSet<(usize, usize)> {
+fn flood_fill(
+    x: &[Vec<char>],
+    cur_char: char,
+    start_loc: (usize, usize),
+) -> FxHashSet<(usize, usize)> {
     let mut region = FxHashSet::default();
     let mut queue = VecDeque::new();
     queue.push_back(start_loc);
@@ -72,29 +80,15 @@ fn dfs(x: &[Vec<char>], cur_char: char, start_loc: (usize, usize)) -> FxHashSet<
     region
 }
 #[aoc(day12, part2)]
-fn part2(input: &str) -> i32 {
-    let mut x = parse(input);
-    let height = x.len();
-    let width = x[0].len();
-    let mut regions = vec![];
-    for row_idx in 0..height {
-        for col_idx in 0..width {
-            if x[row_idx][col_idx] != '.' {
-                let current_char = x[row_idx][col_idx];
-                let current_region = dfs(&x, current_char, (row_idx, col_idx));
-                for d in current_region.clone().iter() {
-                    x[d.0][d.1] = '.';
-                }
-                regions.push(current_region);
-            }
-        }
-    }
+fn part2(input: &str) -> u64 {
+    let x = parse(input);
+    let regions = generate_regions(x);
+
     let mut output = 0;
     for region in regions {
-        let mut area = 0;
+        let area = region.len() as u64;
         let mut corners = 0;
         for c in region.iter() {
-            area += 1;
             let mut conv = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
             for dir in [
                 (0, 1),
@@ -118,23 +112,22 @@ fn part2(input: &str) -> i32 {
             }
 
             //inner corners
-            if conv[0][1] == 0 && conv[1][2] == 0 && conv[0][2] == 1 {
-                corners += 1;
-            }
-            if conv[1][2] == 0 && conv[2][1] == 0 && conv[2][2] == 1 {
-                corners += 1;
-            }
-            if conv[2][1] == 0 && conv[1][0] == 0 && conv[2][0] == 1 {
-                corners += 1;
-            }
-            if conv[1][0] == 0 && conv[0][1] == 0 && conv[0][0] == 1 {
-                corners += 1;
+            for w in [
+                ((0, 1), (1, 2), (0, 2)),
+                ((1, 2), (2, 1), (2, 2)),
+                ((2, 1), (1, 0), (2, 0)),
+                ((1, 0), (0, 1), (0, 0)),
+            ] {
+                if conv[w.0 .0][w.0 .1] == 0
+                    && conv[w.1 .0][w.1 .1] == 0
+                    && conv[w.2 .0][w.2 .1] == 1
+                {
+                    corners += 1;
+                }
             }
         }
-        // println!("{:?}, {:?}, {:?}", area, inner_corners, corners-inner_corners);
         output += area * corners;
     }
-
     output
 }
 
