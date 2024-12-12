@@ -93,7 +93,9 @@ fn recurse_dict(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), Coun
         let power10 = 10u64.pow(length / 2);
         total = recurse_dict(blinks_todo - 1, idx / power10, cache);
         let total2 = recurse_dict(blinks_todo - 1, idx % power10, cache);
-        total2.into_iter().for_each(|(t_idx, t_amount)| *total.entry(t_idx).or_default() += t_amount);
+        total2
+            .into_iter()
+            .for_each(|(t_idx, t_amount)| *total.entry(t_idx).or_default() += t_amount);
     } else {
         total = recurse_dict(blinks_todo - 1, idx * 2024, cache);
     }
