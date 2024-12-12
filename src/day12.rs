@@ -75,7 +75,7 @@ fn part1_conv(input: &str) -> u64 {
         }
     }
 
-    let regions = generate_regions(x);
+    let regions = generate_regions_vec(x);
 
     let mut output = 0;
     for region in regions {
@@ -131,7 +131,7 @@ fn part2_conv(input: &str) -> u64 {
         }
     }
 
-    let regions = generate_regions(x);
+    let regions = generate_regions_vec(x);
 
     let mut output = 0;
     for region in regions {
@@ -169,6 +169,48 @@ fn flood_fill(
         }
     }
     region
+}
+
+fn flood_fill_vec(
+    x: &mut [Vec<char>],
+    cur_char: char,
+    start_loc: (usize, usize),
+) -> Vec<(usize, usize)> {
+    let mut region = vec![];
+    let mut queue = VecDeque::new();
+    queue.push_back(start_loc);
+    region.push(start_loc);
+    x[start_loc.0][start_loc.1] = '.';
+    while let Some(next_c) = queue.pop_front() {
+        for dir in [(0, 1), (1, 0), (usize::MAX, 0), (0, usize::MAX)] {
+            let next_loc = (next_c.0.wrapping_add(dir.0), next_c.1.wrapping_add(dir.1));
+            if next_loc.0 < x.len()
+                && next_loc.1 < x[0].len()
+                && x[next_loc.0][next_loc.1] == cur_char
+            {
+                queue.push_back(next_loc);
+                region.push(next_loc);
+                x[next_loc.0][next_loc.1] = '.';
+            }
+        }
+    }
+    region
+}
+
+fn generate_regions_vec(mut grid: Vec<Vec<char>>) -> Vec<Vec<(usize, usize)>> {
+    let height = grid.len();
+    let width = grid[0].len();
+    let mut regions = vec![];
+    for row_idx in 0..height {
+        for col_idx in 0..width {
+            if grid[row_idx][col_idx] != '.' {
+                let current_char = grid[row_idx][col_idx];
+                let current_region = flood_fill_vec(&mut grid, current_char, (row_idx, col_idx));
+                regions.push(current_region);
+            }
+        }
+    }
+    regions
 }
 
 #[aoc(day12, part2)]
@@ -238,6 +280,14 @@ mod tests {
 
     #[test]
     fn test_1_conv() {
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1_conv(&contents), 140);
+    }
+
+    #[test]
+    fn test_1_conv_vec() {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
