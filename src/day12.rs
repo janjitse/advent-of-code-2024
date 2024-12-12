@@ -22,10 +22,7 @@ fn generate_regions(mut grid: Vec<Vec<char>>) -> Vec<FxHashSet<(usize, usize)>> 
         for col_idx in 0..width {
             if grid[row_idx][col_idx] != '.' {
                 let current_char = grid[row_idx][col_idx];
-                let current_region = flood_fill(&grid, current_char, (row_idx, col_idx));
-                for d in current_region.clone().iter() {
-                    grid[d.0][d.1] = '.';
-                }
+                let current_region = flood_fill(&mut grid, current_char, (row_idx, col_idx));
                 regions.push(current_region);
             }
         }
@@ -56,7 +53,7 @@ fn part1(input: &str) -> u64 {
 }
 
 fn flood_fill(
-    x: &[Vec<char>],
+    x: &mut [Vec<char>],
     cur_char: char,
     start_loc: (usize, usize),
 ) -> FxHashSet<(usize, usize)> {
@@ -70,15 +67,16 @@ fn flood_fill(
             if next_loc.0 < x.len()
                 && next_loc.1 < x[0].len()
                 && x[next_loc.0][next_loc.1] == cur_char
-                && !region.contains(&next_loc)
             {
                 queue.push_back(next_loc);
                 region.insert(next_loc);
+                x[next_loc.0][next_loc.1] = '.';
             }
         }
     }
     region
 }
+
 #[aoc(day12, part2)]
 fn part2(input: &str) -> u64 {
     let x = parse(input);
