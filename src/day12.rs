@@ -155,6 +155,7 @@ fn flood_fill(
     let mut queue = VecDeque::new();
     queue.push_back(start_loc);
     region.insert(start_loc);
+    x[start_loc.0][start_loc.1] = '.';
     while let Some(next_c) = queue.pop_front() {
         for dir in [(0, 1), (1, 0), (usize::MAX, 0), (0, usize::MAX)] {
             let next_loc = (next_c.0.wrapping_add(dir.0), next_c.1.wrapping_add(dir.1));
