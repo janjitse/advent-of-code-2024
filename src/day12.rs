@@ -52,6 +52,100 @@ fn part1(input: &str) -> u64 {
     output
 }
 
+#[aoc(day12, part1, conv)]
+fn part1_conv(input: &str) -> u64 {
+    let x = parse(input);
+    let height = x.len();
+    let width = x[0].len();
+    let mut edges: Vec<Vec<u8>> = vec![vec![0; width]; height];
+    for (row_idx, row) in x.iter().enumerate() {
+        for (col_idx, &val) in row.iter().enumerate() {
+            if row_idx == 0 || x[row_idx - 1][col_idx] != val {
+                edges[row_idx][col_idx] += 1;
+            }
+            if row_idx == height - 1 || x[row_idx + 1][col_idx] != val {
+                edges[row_idx][col_idx] += 1;
+            }
+            if col_idx == 0 || x[row_idx][col_idx - 1] != val {
+                edges[row_idx][col_idx] += 1;
+            }
+            if col_idx == width - 1 || x[row_idx][col_idx + 1] != val {
+                edges[row_idx][col_idx] += 1;
+            }
+        }
+    }
+
+    let regions = generate_regions(x);
+
+    let mut output = 0;
+    for region in regions {
+        let area = region.len() as u64;
+        let perimeter = region
+            .into_iter()
+            .map(|c| edges[c.0][c.1] as u64)
+            .sum::<u64>();
+        output += area * perimeter;
+    }
+
+    output
+}
+
+#[aoc(day12, part2, conv)]
+fn part2_conv(input: &str) -> u64 {
+    let x = parse(input);
+    let height = x.len();
+    let width = x[0].len();
+    let mut corners: Vec<Vec<u8>> = vec![vec![0; width]; height];
+    let kernels_inner = [
+        ((usize::MAX, 0), (0, 1), (usize::MAX, 1)),
+        ((0, 1), (1, 0), (1, 1)),
+        ((1, 0), (0, usize::MAX), (1, usize::MAX)),
+        ((0, usize::MAX), (usize::MAX, 0), (usize::MAX, usize::MAX)),
+    ];
+
+    for (row_idx, row) in x.iter().enumerate() {
+        for (col_idx, val) in row.iter().enumerate() {
+            for k in kernels_inner.iter() {
+                let corner = (row_idx.wrapping_add(k.2 .0), col_idx.wrapping_add(k.2 .1));
+                let b1 = (row_idx.wrapping_add(k.0 .0), col_idx.wrapping_add(k.0 .1));
+                let b2 = (row_idx.wrapping_add(k.1 .0), col_idx.wrapping_add(k.1 .1));
+                let b1_val = match b1.0 >= height || b1.1 >= width {
+                    true => '.',
+                    false => x[b1.0][b1.1],
+                };
+                let b2_val = match b2.0 >= height || b2.1 >= width {
+                    true => '.',
+                    false => x[b2.0][b2.1],
+                };
+                let corner_val = match corner.0 >= height || corner.1 >= width {
+                    true => '.',
+                    false => x[corner.0][corner.1],
+                };
+                if &corner_val != val && &b1_val == val && &b2_val == val {
+                    corners[row_idx][col_idx] += 1;
+                }
+                if &b1_val != val && &b2_val != val {
+                    corners[row_idx][col_idx] += 1;
+                }
+            }
+        }
+    }
+
+    let regions = generate_regions(x);
+
+    let mut output = 0;
+    for region in regions {
+        let area = region.len() as u64;
+        let perimeter = region
+            .into_iter()
+            .map(|c| corners[c.0][c.1] as u64)
+            .sum::<u64>();
+        output += area * perimeter;
+    }
+
+    output
+}
+
 fn flood_fill(
     x: &mut [Vec<char>],
     cur_char: char,
@@ -140,6 +234,14 @@ mod tests {
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part1(&contents), 140);
+    }
+
+    #[test]
+    fn test_1_conv() {
+        let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
+        let file_path = format!("input/2024/{}_small.txt", s);
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1_conv(&contents), 140);
     }
 
     #[test]
