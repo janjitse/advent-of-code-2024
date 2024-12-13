@@ -124,7 +124,7 @@ mod tests {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
-        assert_eq!(part2(&contents), -1);
+        assert_eq!(part2(&contents), 875318608908);
     }
 
 }
