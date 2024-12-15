@@ -16,7 +16,7 @@ fn parse(input: &str) -> (Vec<Vec<char>>, Vec<char>) {
         movement.append(&mut p);
     }
 
-    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
     (map, movement)
 }
 
@@ -44,8 +44,8 @@ fn part1(input: &str) -> u64 {
     let robot_move_vec = [
         ('v', (1, 0)),
         ('>', (0, 1)),
-        ('<', (0, usize::MAX)),
         ('^', (usize::MAX, 0)),
+        ('<', (0, usize::MAX)),
     ];
     let robot_movement = FxHashMap::from_iter(robot_move_vec);
     for m in movement {
@@ -85,7 +85,7 @@ fn part1(input: &str) -> u64 {
         // println!("Location updated to: {:?}", new_robot_loc);
         robot_location = new_robot_loc;
     }
-    // print_map((map.len(), map[0].len()), &boxes, &boxes, &obstacles, &robot_location, 1);
+    // print_map((map.len(), map[0].len()), &boxes, &obstacles, &robot_location, 1);
 
     boxes
         .into_iter()
@@ -99,7 +99,6 @@ fn part2(input: &str) -> u64 {
     let mut robot_location = (0, 0);
     let mut obstacles = FxHashSet::default();
     let mut left_boxes = FxHashSet::default();
-    let mut right_boxes = FxHashSet::default();
     for (idx_row, row) in map.iter().enumerate() {
         for (idx_col, &col) in row.iter().enumerate() {
             if col == '@' {
@@ -109,7 +108,6 @@ fn part2(input: &str) -> u64 {
                 obstacles.insert((idx_row, 2 * idx_col + 1));
             } else if col == 'O' {
                 left_boxes.insert((idx_row, 2 * idx_col));
-                right_boxes.insert((idx_row, 2 * idx_col + 1));
             }
         }
     }
@@ -137,19 +135,16 @@ fn part2(input: &str) -> u64 {
         {
             // println!("Box found at {:?}", new_robot_loc);
             let mut left_box_bloc = FxHashSet::default();
-            let mut right_box_bloc = FxHashSet::default();
             let mut check = VecDeque::new();
             if left_boxes.contains(&new_robot_loc) {
                 left_box_bloc.insert(new_robot_loc);
                 check.push_back(new_robot_loc);
-                right_box_bloc.insert((new_robot_loc.0, new_robot_loc.1 + 1));
                 check.push_back((new_robot_loc.0, new_robot_loc.1 + 1));
             }
             if left_boxes.contains(&(new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX))) {
-                right_box_bloc.insert(new_robot_loc);
-                check.push_back(new_robot_loc);
                 left_box_bloc.insert((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
                 check.push_back((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
+                check.push_back(new_robot_loc);
             }
             while let Some(b) = check.pop_front() {
                 let b_new = (b.0.wrapping_add(robot_dir.0), b.1.wrapping_add(robot_dir.1));
@@ -157,17 +152,13 @@ fn part2(input: &str) -> u64 {
                     || left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX)))
                 {
                     if left_boxes.contains(&b_new) {
-                        let mut new = left_box_bloc.insert(b_new);
-                        new |= right_box_bloc.insert((b_new.0, b_new.1 + 1));
-                        if new {
+                        if left_box_bloc.insert(b_new) {
                             check.push_back(b_new);
                             check.push_back((b_new.0, b_new.1 + 1));
                         }
                     }
                     if left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX))) {
-                        let mut new = right_box_bloc.insert(b_new);
-                        new |= left_box_bloc.insert((b_new.0, b_new.1.wrapping_add(usize::MAX)));
-                        if new {
+                        if left_box_bloc.insert((b_new.0, b_new.1.wrapping_add(usize::MAX))) {
                             check.push_back(b_new);
                             check.push_back((b_new.0, b_new.1.wrapping_add(usize::MAX)));
                         }
@@ -176,27 +167,25 @@ fn part2(input: &str) -> u64 {
             }
             // println!("Moving block: {:?}, {:?}", left_box_bloc, right_box_bloc);
             let mut move_possible = true;
-            for b in left_box_bloc.iter().chain(right_box_bloc.iter()) {
+            for b in &left_box_bloc {
                 if obstacles
                     .contains(&(b.0.wrapping_add(robot_dir.0), b.1.wrapping_add(robot_dir.1)))
+                    || obstacles.contains(&(
+                        b.0.wrapping_add(robot_dir.0),
+                        b.1.wrapping_add(robot_dir.1) + 1,
+                    ))
                 {
                     move_possible = false;
                     break;
                 }
             }
             if move_possible {
+                // this has to be done sequentially, otherwise we might remove stuff we've added
                 for b in left_box_bloc.iter() {
                     left_boxes.remove(b);
                 }
                 for b in left_box_bloc.iter() {
                     left_boxes
-                        .insert((b.0.wrapping_add(robot_dir.0), b.1.wrapping_add(robot_dir.1)));
-                }
-                for b in right_box_bloc.iter() {
-                    right_boxes.remove(b);
-                }
-                for b in right_box_bloc.iter() {
-                    right_boxes
                         .insert((b.0.wrapping_add(robot_dir.0), b.1.wrapping_add(robot_dir.1)));
                 }
             } else {
@@ -207,7 +196,7 @@ fn part2(input: &str) -> u64 {
         robot_location = new_robot_loc;
         // print_map(&map, &left_boxes, &right_boxes, &obstacles, &robot_location);
     }
-    // print_map((map.len(), map[0].len()), &left_boxes, &right_boxes, &obstacles, &robot_location, 2);
+    // print_map((map.len(), map[0].len()), &left_boxes, &obstacles, &robot_location, 2);
 
     // println!("{:?}", map);
     left_boxes
@@ -220,7 +209,6 @@ fn part2(input: &str) -> u64 {
 fn print_map(
     map_size: (usize, usize),
     left_boxes: &FxHashSet<(usize, usize)>,
-    right_boxes: &FxHashSet<(usize, usize)>,
     obstacles: &FxHashSet<(usize, usize)>,
     robot_loc: &(usize, usize),
     part: usize,
@@ -230,13 +218,9 @@ fn print_map(
     for b in left_boxes.iter() {
         if part == 2 {
             new_map[b.0][b.1] = '[';
+            new_map[b.0][b.1 + 1] = ']';
         } else {
             new_map[b.0][b.1] = 'O';
-        }
-    }
-    for b in right_boxes.iter() {
-        if part == 2 {
-            new_map[b.0][b.1] = ']';
         }
     }
     for l in new_map.iter() {
