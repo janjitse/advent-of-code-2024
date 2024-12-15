@@ -16,7 +16,7 @@ fn parse(input: &str) -> (Vec<Vec<char>>, Vec<char>) {
         movement.append(&mut p);
     }
 
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     (map, movement)
 }
 
@@ -135,13 +135,12 @@ fn part2(input: &str) -> u64 {
         {
             // println!("Box found at {:?}", new_robot_loc);
             let mut left_box_bloc = FxHashSet::default();
-            let mut check =  vec![];
+            let mut check = vec![];
             if left_boxes.contains(&new_robot_loc) {
                 left_box_bloc.insert(new_robot_loc);
                 check.push(new_robot_loc);
                 check.push((new_robot_loc.0, new_robot_loc.1 + 1));
-            }
-            if left_boxes.contains(&(new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX))) {
+            } else {
                 left_box_bloc.insert((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
                 check.push((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
                 check.push(new_robot_loc);
@@ -154,12 +153,11 @@ fn part2(input: &str) -> u64 {
                     if left_boxes.contains(&b_new) && left_box_bloc.insert(b_new) {
                         check.push(b_new);
                         check.push((b_new.0, b_new.1 + 1));
-                    }
-                    if left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX)))
+                    } else if left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX)))
                         && left_box_bloc.insert((b_new.0, b_new.1.wrapping_add(usize::MAX)))
                     {
-                        check.push(b_new);
                         check.push((b_new.0, b_new.1.wrapping_add(usize::MAX)));
+                        check.push(b_new);
                     }
                 }
             }
@@ -317,6 +315,7 @@ fn part2_ids(input: &str) -> u64 {
                 );
                 for b_i in box_ids {
                     let locs = loc_box.get_mut(&b_i).unwrap();
+                    #[allow(clippy::needless_range_loop)]
                     for loc_idx in 0..locs.len() {
                         let new_loc = (
                             locs[loc_idx].0.wrapping_add(robot_dir.0),
