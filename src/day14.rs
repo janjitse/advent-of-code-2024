@@ -27,20 +27,18 @@ fn part1(input: &str) -> u64 {
     let mut x = parse(input);
     let width = 101;
     let height = 103;
-    for _ in 0..100 {
-        let mut new_positions = vec![];
-        for (p, v) in x.iter() {
-            let mut new_pos = ((p.0 + v.0) % width, (p.1 + v.1) % height);
-            if new_pos.0 < 0 {
-                new_pos = (new_pos.0 + width, new_pos.1);
-            }
-            if new_pos.1 < 0 {
-                new_pos = (new_pos.0, new_pos.1 + height);
-            }
-            new_positions.push((new_pos, *v));
+    let mut new_positions = vec![];
+    for (p, v) in x.iter() {
+        let mut new_pos = ((p.0 + v.0 * 100) % width, (p.1 + v.1 * 100) % height);
+        if new_pos.0 < 0 {
+            new_pos = (new_pos.0 + width, new_pos.1);
         }
-        x = new_positions;
+        if new_pos.1 < 0 {
+            new_pos = (new_pos.0, new_pos.1 + height);
+        }
+        new_positions.push((new_pos, *v));
     }
+    x = new_positions;
     let mut quadrant_counts = (0, 0, 0, 0);
 
     for (p, _) in x {
@@ -58,7 +56,7 @@ fn part1(input: &str) -> u64 {
         }
     }
 
-    println!("{:?}", quadrant_counts);
+    // println!("{:?}", quadrant_counts);
     quadrant_counts.0 * quadrant_counts.1 * quadrant_counts.2 * quadrant_counts.3
 }
 
