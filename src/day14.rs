@@ -22,8 +22,6 @@ fn parse(input: &str) -> Vec<((i32, i32), (i32, i32))> {
     total_output
 }
 
-use std::collections::HashMap;
-
 #[aoc(day14, part1)]
 fn part1(input: &str) -> u64 {
     let mut x = parse(input);
@@ -64,22 +62,21 @@ fn part1(input: &str) -> u64 {
     quadrant_counts.0 * quadrant_counts.1 * quadrant_counts.2 * quadrant_counts.3
 }
 
+use crate::statistics::entropy;
+
 #[aoc(day14, part2)]
 fn part2(input: &str) -> u64 {
     let mut x = parse(input);
 
     let width = 101;
     let height = 103;
-    let mut periods_hashmap = HashMap::new();
-    let mut init_hashmap = HashMap::new();
-    for (idx, (p, _)) in x.iter().enumerate() {
-        init_hashmap.insert(idx, *p);
-    }
     let mut t = 0;
+    let mut min_entropy = f64::MAX;
+    let mut min_t = 0;
     loop {
         t += 1;
         let mut new_positions = vec![];
-        for (idx, (p, v)) in x.into_iter().enumerate() {
+        for (p, v) in x.into_iter() {
             let mut new_pos = ((p.0 + v.0) % width, (p.1 + v.1) % height);
             if new_pos.0 < 0 {
                 new_pos = (new_pos.0 + width, new_pos.1);
@@ -88,34 +85,27 @@ fn part2(input: &str) -> u64 {
                 new_pos = (new_pos.0, new_pos.1 + height);
             }
             new_positions.push((new_pos, v));
-            if *init_hashmap.get(&idx).unwrap() == new_pos {
-                periods_hashmap.entry(idx).or_insert(t);
-            }
         }
         x = new_positions;
 
-        if x.len() == periods_hashmap.len() {
+        if t == (width * height) as u64 {
             break;
         }
-        let mut vis: Vec<Vec<char>> = vec![vec![' '; width as usize]; height as usize];
+        let mut flattened = vec![0u8; (width as usize * height as usize) / 6];
         for (p, _) in x.iter() {
-            vis[p.1 as usize][p.0 as usize] = '#';
+            let loc_in_flattened = ((p.0 * width + p.1) / 6) as usize;
+            let loc_in_u6 = (p.0 * width + p.1) % 6;
+            flattened[loc_in_flattened] += 1 << loc_in_u6;
         }
-        let mut found = false;
-        for line in vis {
-            if line
-                .iter()
-                .collect::<String>()
-                .contains("#############################")
-            {
-                found = true;
-            }
-        }
-        if found {
-            break;
+
+        let entr = entropy(&flattened);
+        if entr < min_entropy {
+            min_entropy = entr;
+            min_t = t;
+            // println!("{:?},{:?}", t, entr);
         }
     }
-    t
+    min_t
 }
 
 #[cfg(test)]

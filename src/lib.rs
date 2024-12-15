@@ -20,5 +20,5 @@ pub mod day14;
 mod day15;
 
 // mod number_theory;
-// mod statistics;
+mod statistics;
 aoc_lib! { year = 2024 }
