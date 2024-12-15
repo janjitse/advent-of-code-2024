@@ -118,7 +118,7 @@ fn part2(input: &str) -> u64 {
         ('^', (usize::MAX, 0)),
     ]);
     for m in movement {
-        // print_map(&map, &left_boxes, &right_boxes, &obstacles, &robot_location);
+        // print_map(&map, &left_boxes, &obstacles, &robot_location, 2);
         let robot_dir = robot_movement[&m];
         // println!("Trying direction: {:?}", robot_dir);
         let new_robot_loc = (
@@ -135,33 +135,31 @@ fn part2(input: &str) -> u64 {
         {
             // println!("Box found at {:?}", new_robot_loc);
             let mut left_box_bloc = FxHashSet::default();
-            let mut check = VecDeque::new();
+            let mut check =  vec![];
             if left_boxes.contains(&new_robot_loc) {
                 left_box_bloc.insert(new_robot_loc);
-                check.push_back(new_robot_loc);
-                check.push_back((new_robot_loc.0, new_robot_loc.1 + 1));
+                check.push(new_robot_loc);
+                check.push((new_robot_loc.0, new_robot_loc.1 + 1));
             }
             if left_boxes.contains(&(new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX))) {
                 left_box_bloc.insert((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
-                check.push_back((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
-                check.push_back(new_robot_loc);
+                check.push((new_robot_loc.0, new_robot_loc.1.wrapping_add(usize::MAX)));
+                check.push(new_robot_loc);
             }
-            while let Some(b) = check.pop_front() {
+            while let Some(b) = check.pop() {
                 let b_new = (b.0.wrapping_add(robot_dir.0), b.1.wrapping_add(robot_dir.1));
                 if left_boxes.contains(&b_new)
                     || left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX)))
                 {
-                    if left_boxes.contains(&b_new) {
-                        if left_box_bloc.insert(b_new) {
-                            check.push_back(b_new);
-                            check.push_back((b_new.0, b_new.1 + 1));
-                        }
+                    if left_boxes.contains(&b_new) && left_box_bloc.insert(b_new) {
+                        check.push(b_new);
+                        check.push((b_new.0, b_new.1 + 1));
                     }
-                    if left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX))) {
-                        if left_box_bloc.insert((b_new.0, b_new.1.wrapping_add(usize::MAX))) {
-                            check.push_back(b_new);
-                            check.push_back((b_new.0, b_new.1.wrapping_add(usize::MAX)));
-                        }
+                    if left_boxes.contains(&(b_new.0, b_new.1.wrapping_add(usize::MAX)))
+                        && left_box_bloc.insert((b_new.0, b_new.1.wrapping_add(usize::MAX)))
+                    {
+                        check.push(b_new);
+                        check.push((b_new.0, b_new.1.wrapping_add(usize::MAX)));
                     }
                 }
             }
