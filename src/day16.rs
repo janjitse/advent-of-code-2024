@@ -22,6 +22,16 @@ struct Position {
     facing: (usize, usize),
 }
 
+impl Position {
+    fn flip(&self) -> Self {
+        let opp_facing = (self.facing.0.wrapping_neg(), self.facing.1.wrapping_neg());
+        Position {
+            loc: self.loc,
+            facing: opp_facing,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 struct PriorityElement {
     dist: u64,
@@ -86,7 +96,7 @@ fn part1(input: &str) -> u64 {
         if pos.loc == end {
             return d as u64;
         }
-        if visited.contains(&pos) {
+        if visited.contains(&pos) || visited.contains(&pos.flip()) {
             continue;
         }
         visited.insert(pos.clone());
@@ -105,14 +115,13 @@ fn part1(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                if !visited.contains(&xy) {
+                if !visited.contains(&xy) && !visited.contains(&xy.flip()) {
                     p_q.push(PriorityElement {
                         dist: d + (rot_cost % 2) * 1000 + 1,
                         pos: xy,
                         hist: None,
                     });
                 }
-
             }
             cur_dir = clockwise[&cur_dir];
         }
@@ -168,7 +177,9 @@ fn part2(input: &str) -> u64 {
         if d > end_distance {
             break;
         }
-        if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX) {
+        if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX)
+            || d > *visited_distance.get(&pos.flip()).unwrap_or(&u64::MAX)
+        {
             continue;
         }
         if pos.loc == end {
@@ -198,7 +209,9 @@ fn part2(input: &str) -> u64 {
                     facing: cur_dir,
                 };
                 let dist = d + (rot_cost % 2) * 1000 + 1;
-                if dist <= *visited_distance.get(&xy).unwrap_or(&u64::MAX) {
+                if dist <= *visited_distance.get(&xy).unwrap_or(&u64::MAX)
+                    && dist <= *visited_distance.get(&xy.flip()).unwrap_or(&u64::MAX)
+                {
                     p_q.push(PriorityElement {
                         dist,
                         pos: xy,
@@ -209,6 +222,7 @@ fn part2(input: &str) -> u64 {
             cur_dir = clockwise[&cur_dir];
         }
     }
+    println!("Searching done");
     let mut locations = FxHashSet::default();
     locations.insert(end);
     let mut walkback = vec![];
