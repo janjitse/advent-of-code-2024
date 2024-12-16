@@ -144,7 +144,7 @@ fn part2(input: &str) -> u64 {
     let mut p_q = BinaryHeap::new();
     // let mut visited = FxHashSet::default();
     let mut visited_distance = FxHashMap::default();
-    let previous: Vec<(usize,usize)> = vec![];
+    let previous: Vec<(usize, usize)> = vec![];
     p_q.push((Reverse(0), starting_pos, previous));
     println!("{:?}", end);
     let mut all_prev = vec![];
@@ -179,7 +179,7 @@ fn part2(input: &str) -> u64 {
                 pos.loc.1.wrapping_add(cur_dir.1),
             );
             if spaces.contains(&next_pos) {
-                if prev.last().unwrap_or(&(0,0)) == &pos.loc { 
+                if prev.last().unwrap_or(&(0, 0)) == &pos.loc {
                     continue;
                 }
                 let xy = Position {
@@ -212,7 +212,6 @@ fn part2(input: &str) -> u64 {
                 // }
                 p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy, next_prev));
             }
-            
         }
     }
     let mut locations = FxHashSet::default();
