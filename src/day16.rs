@@ -41,7 +41,6 @@ fn part1(input: &str) -> u64 {
             }
         }
     }
-    println!("{:?}", start);
     let starting_pos = Position {
         loc: start,
         facing: (0, 1),
@@ -61,7 +60,6 @@ fn part1(input: &str) -> u64 {
     let mut p_q = BinaryHeap::new();
     let mut visited = FxHashSet::default();
     p_q.push((Reverse(0), starting_pos));
-    println!("{:?}", end);
     while let Some((d, pos)) = p_q.pop() {
         if pos.loc == end {
             return d.0;
@@ -101,8 +99,7 @@ fn part1(input: &str) -> u64 {
             }
         }
     }
-
-    return 0;
+    0
 }
 
 #[aoc(day16, part2)]
@@ -124,7 +121,6 @@ fn part2(input: &str) -> u64 {
             }
         }
     }
-    println!("{:?}", start);
     let starting_pos = Position {
         loc: start,
         facing: (0, 1),
@@ -142,53 +138,38 @@ fn part2(input: &str) -> u64 {
         ((0, 1), (usize::MAX, 0)),
     ]);
     let mut p_q = BinaryHeap::new();
-    // let mut visited = FxHashSet::default();
     let mut visited_distance = FxHashMap::default();
     let previous: Vec<(usize, usize)> = vec![];
     p_q.push((Reverse(0), starting_pos, previous));
-    println!("{:?}", end);
     let mut all_prev = vec![];
     let mut end_distance = i32::MAX;
     while let Some((d, pos, prev)) = p_q.pop() {
-        // println!("{:?}, {:?}, {:?}, {:?}", p_q.len(), d.0, end_distance, prev);
         if d.0 > end_distance {
             break;
         }
         if pos.loc == end {
-            if d.0 <= end_distance {
-                // println!("Path to end found: {:?}", d.0);
-                end_distance = d.0;
-                all_prev.push(prev.clone());
-                continue;
-            }
+            // println!("Path to end found: {:?}", d.0);
+            end_distance = d.0;
+            all_prev.push(prev.clone());
+            continue;
         }
-        // if visited.contains(&prev) {
-        //         continue;
-        // }
-        if visited_distance.contains_key(&pos) {
-            if d.0 > *visited_distance.get(&pos).unwrap() {
-                continue;
-            }
+        if visited_distance.contains_key(&pos) && d.0 > *visited_distance.get(&pos).unwrap() {
+            continue;
         }
-        // visited.insert(prev.clone());
         visited_distance.insert(pos.clone(), d.0);
         let mut cur_dir = pos.facing;
-        for rot_cost in 0..3 {
+        for rot_cost in 0..2 {
             let next_pos = (
                 pos.loc.0.wrapping_add(cur_dir.0),
                 pos.loc.1.wrapping_add(cur_dir.1),
             );
             if spaces.contains(&next_pos) {
-                if prev.last().unwrap_or(&(0, 0)) == &pos.loc {
-                    continue;
-                }
                 let xy = Position {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-
                 let mut next_prev = prev.clone();
-                next_prev.push(pos.loc.clone());
+                next_prev.push(pos.loc);
                 p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy, next_prev));
             }
             cur_dir = clockwise[&cur_dir];
@@ -206,10 +187,7 @@ fn part2(input: &str) -> u64 {
                     facing: cur_dir,
                 };
                 let mut next_prev = prev.clone();
-                next_prev.push(pos.loc.clone());
-                // if visited.contains(&next_prev) {
-                //     continue;
-                // }
+                next_prev.push(pos.loc);
                 p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy, next_prev));
             }
         }
@@ -220,7 +198,7 @@ fn part2(input: &str) -> u64 {
             locations.insert(p);
         }
     }
-    return locations.len() as u64 + 1;
+    locations.len() as u64 + 1
 }
 
 #[cfg(test)]
