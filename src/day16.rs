@@ -281,4 +281,60 @@ mod tests {
         let contents = fs::read_to_string(file_path).expect("file not found");
         assert_eq!(part2(&contents), 64);
     }
+
+    #[test]
+    fn test_1_two_paths() {
+        let file_path = format!("input/2024/aoc-2024-day-16-twopaths.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1(&contents), 3006);
+    }
+
+    #[test]
+    fn test_2_two_paths() {
+        let file_path = format!("input/2024/aoc-2024-day-16-twopaths.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2(&contents), 1012);
+    }
+
+    #[test]
+    fn test_1_two_turns() {
+        let file_path = format!("input/2024/aoc-2024-day-16-twoturns.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1(&contents), 3004);
+    }
+
+    #[test]
+    fn test_2_two_turns() {
+        let file_path = format!("input/2024/aoc-2024-day-16-twoturns.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2(&contents), 1005);
+    }
+
+    #[test]
+    fn test_1_three_turns() {
+        let file_path = format!("input/2024/aoc-2024-day-16-threeturns.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1(&contents), 3006);
+    }
+
+    #[test]
+    fn test_2_three_turns() {
+        let file_path = format!("input/2024/aoc-2024-day-16-threeturns.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2(&contents), 7);
+    }
+
+    #[test]
+    fn test_1_labyrinth() {
+        let file_path = format!("input/2024/aoc-2024-day-16-labyrinth.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part1(&contents), 327848);
+    }
+
+    #[test]
+    fn test_2_labyrinth() {
+        let file_path = format!("input/2024/aoc-2024-day-16-labyrinth.txt");
+        let contents = fs::read_to_string(file_path).expect("file not found");
+        assert_eq!(part2(&contents), 29849);
+    }
 }
