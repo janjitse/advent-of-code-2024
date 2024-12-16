@@ -24,7 +24,7 @@ struct Position {
 
 #[derive(Debug, PartialEq, Eq)]
 struct PriorityElement {
-    dist: i32,
+    dist: u64,
     pos: Position,
     hist: Option<Position>,
 }
@@ -105,11 +105,14 @@ fn part1(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                p_q.push(PriorityElement {
-                    dist: d + (rot_cost % 2) * 1000 + 1,
-                    pos: xy,
-                    hist: None,
-                });
+                if !visited.contains(&xy) {
+                    p_q.push(PriorityElement {
+                        dist: d + (rot_cost % 2) * 1000 + 1,
+                        pos: xy,
+                        hist: None,
+                    });
+                }
+
             }
             cur_dir = clockwise[&cur_dir];
         }
@@ -155,7 +158,7 @@ fn part2(input: &str) -> u64 {
         pos: starting_pos,
         hist: previous,
     });
-    let mut end_distance = i32::MAX;
+    let mut end_distance = u64::MAX;
     while let Some(PriorityElement {
         dist: d,
         pos,
@@ -165,7 +168,7 @@ fn part2(input: &str) -> u64 {
         if d > end_distance {
             break;
         }
-        if d > *visited_distance.get(&pos).unwrap_or(&i32::MAX) {
+        if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX) {
             continue;
         }
         if pos.loc == end {
@@ -194,11 +197,14 @@ fn part2(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                p_q.push(PriorityElement {
-                    dist: d + (rot_cost % 2) * 1000 + 1,
-                    pos: xy,
-                    hist: Some(pos.clone()),
-                });
+                let dist = d + (rot_cost % 2) * 1000 + 1;
+                if dist <= *visited_distance.get(&xy).unwrap_or(&u64::MAX) {
+                    p_q.push(PriorityElement {
+                        dist,
+                        pos: xy,
+                        hist: Some(pos.clone()),
+                    });
+                }
             }
             cur_dir = clockwise[&cur_dir];
         }
