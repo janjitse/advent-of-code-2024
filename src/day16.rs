@@ -13,13 +13,32 @@ fn parse(input: &str) -> Vec<Vec<char>> {
 }
 
 use fxhash::{FxHashMap, FxHashSet};
-use std::cmp::Reverse;
+use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Position {
     loc: (usize, usize),
     facing: (usize, usize),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct PriorityElement {
+    dist: i32,
+    pos: Position,
+    hist: Option<Position>,
+}
+
+impl Ord for PriorityElement {
+    fn cmp(&self, other: &Self) -> Ordering {
+        Reverse(self.dist).cmp(&Reverse(other.dist))
+    }
+}
+
+impl PartialOrd for PriorityElement {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(Reverse(self.dist).cmp(&Reverse(other.dist)))
+    }
 }
 
 #[aoc(day16, part1)]
@@ -51,25 +70,32 @@ fn part1(input: &str) -> u64 {
         ((0, usize::MAX), (usize::MAX, 0)),
         ((usize::MAX, 0), (0, 1)),
     ]);
-    let counter_clockwise = FxHashMap::from_iter([
-        ((1, 0), (0, 1)),
-        ((0, usize::MAX), (1, 0)),
-        ((usize::MAX, 0), (0, usize::MAX)),
-        ((0, 1), (usize::MAX, 0)),
-    ]);
     let mut p_q = BinaryHeap::new();
     let mut visited = FxHashSet::default();
-    p_q.push((Reverse(0), starting_pos));
-    while let Some((d, pos)) = p_q.pop() {
+    p_q.push(PriorityElement {
+        dist: 0,
+        pos: starting_pos,
+        hist: None,
+    });
+    while let Some(PriorityElement {
+        dist: d,
+        pos,
+        hist: _,
+    }) = p_q.pop()
+    {
         if pos.loc == end {
-            return d.0;
+            return d as u64;
         }
         if visited.contains(&pos) {
             continue;
         }
         visited.insert(pos.clone());
         let mut cur_dir = pos.facing;
-        for rot_cost in 0..3 {
+        for rot_cost in 0..4 {
+            if rot_cost == 2 {
+                cur_dir = clockwise[&cur_dir];
+                continue;
+            }
             let next_pos = (
                 pos.loc.0.wrapping_add(cur_dir.0),
                 pos.loc.1.wrapping_add(cur_dir.1),
@@ -79,24 +105,13 @@ fn part1(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy));
+                p_q.push(PriorityElement {
+                    dist: d + (rot_cost % 2) * 1000 + 1,
+                    pos: xy,
+                    hist: None,
+                });
             }
             cur_dir = clockwise[&cur_dir];
-        }
-        cur_dir = pos.facing;
-        for rot_cost in 1..2 {
-            cur_dir = counter_clockwise[&cur_dir];
-            let next_pos = (
-                pos.loc.0.wrapping_add(cur_dir.0),
-                pos.loc.1.wrapping_add(cur_dir.1),
-            );
-            if spaces.contains(&next_pos) {
-                let xy = Position {
-                    loc: next_pos,
-                    facing: cur_dir,
-                };
-                p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy));
-            }
         }
     }
     0
@@ -115,8 +130,7 @@ fn part2(input: &str) -> u64 {
             }
             if col == 'E' {
                 end = (row_idx, col_idx);
-            }
-            if col == 'S' {
+            } else if col == 'S' {
                 start = (row_idx, col_idx);
             }
         }
@@ -131,34 +145,46 @@ fn part2(input: &str) -> u64 {
         ((0, usize::MAX), (usize::MAX, 0)),
         ((usize::MAX, 0), (0, 1)),
     ]);
-    let counter_clockwise = FxHashMap::from_iter([
-        ((1, 0), (0, 1)),
-        ((0, usize::MAX), (1, 0)),
-        ((usize::MAX, 0), (0, usize::MAX)),
-        ((0, 1), (usize::MAX, 0)),
-    ]);
     let mut p_q = BinaryHeap::new();
     let mut visited_distance = FxHashMap::default();
-    let previous: Vec<(usize, usize)> = vec![];
-    p_q.push((Reverse(0), starting_pos, previous));
-    let mut all_prev = vec![];
+    let mut previous_elements: FxHashMap<Position, FxHashSet<Option<Position>>> =
+        FxHashMap::default();
+    let previous = None;
+    p_q.push(PriorityElement {
+        dist: 0,
+        pos: starting_pos,
+        hist: previous,
+    });
     let mut end_distance = i32::MAX;
-    while let Some((d, pos, prev)) = p_q.pop() {
-        if d.0 > end_distance {
+    while let Some(PriorityElement {
+        dist: d,
+        pos,
+        hist: prev,
+    }) = p_q.pop()
+    {
+        if d > end_distance {
             break;
         }
+        if d > *visited_distance.get(&pos).unwrap_or(&i32::MAX) {
+            continue;
+        }
         if pos.loc == end {
-            // println!("Path to end found: {:?}", d.0);
-            end_distance = d.0;
-            all_prev.push(prev.clone());
+            end_distance = d;
+            previous_elements.entry(pos).or_default().insert(prev);
             continue;
         }
-        if visited_distance.contains_key(&pos) && d.0 > *visited_distance.get(&pos).unwrap() {
-            continue;
-        }
-        visited_distance.insert(pos.clone(), d.0);
+        visited_distance.insert(pos.clone(), d);
+        previous_elements
+            .entry(pos.clone())
+            .or_default()
+            .insert(prev.clone());
         let mut cur_dir = pos.facing;
-        for rot_cost in 0..2 {
+        for rot_cost in 0..4 {
+            if rot_cost == 2 {
+                // don't go back
+                cur_dir = clockwise[&cur_dir];
+                continue;
+            }
             let next_pos = (
                 pos.loc.0.wrapping_add(cur_dir.0),
                 pos.loc.1.wrapping_add(cur_dir.1),
@@ -168,37 +194,35 @@ fn part2(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                let mut next_prev = prev.clone();
-                next_prev.push(pos.loc);
-                p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy, next_prev));
+                p_q.push(PriorityElement {
+                    dist: d + (rot_cost % 2) * 1000 + 1,
+                    pos: xy,
+                    hist: Some(pos.clone()),
+                });
             }
             cur_dir = clockwise[&cur_dir];
         }
-        cur_dir = pos.facing;
-        for rot_cost in 1..2 {
-            cur_dir = counter_clockwise[&cur_dir];
-            let next_pos = (
-                pos.loc.0.wrapping_add(cur_dir.0),
-                pos.loc.1.wrapping_add(cur_dir.1),
-            );
-            if spaces.contains(&next_pos) {
-                let xy = Position {
-                    loc: next_pos,
-                    facing: cur_dir,
-                };
-                let mut next_prev = prev.clone();
-                next_prev.push(pos.loc);
-                p_q.push((Reverse(d.0 + rot_cost * 1000 + 1), xy, next_prev));
+    }
+    let mut locations = FxHashSet::default();
+    locations.insert(end);
+    let mut walkback = vec![];
+    for &facing in clockwise.values() {
+        let end_pos = Position { loc: end, facing };
+        let end_elements = previous_elements.remove(&end_pos);
+        if let Some(end_elements) = end_elements {
+            walkback.extend(end_elements.into_iter());
+        }
+    }
+    while let Some(pos) = walkback.pop() {
+        if let Some(pos) = pos {
+            locations.insert(pos.loc);
+            let new_elements = previous_elements.remove(&pos);
+            if let Some(new_elements) = new_elements {
+                walkback.extend(new_elements.into_iter());
             }
         }
     }
-    let mut locations = FxHashSet::default();
-    for path in all_prev {
-        for p in path {
-            locations.insert(p);
-        }
-    }
-    locations.len() as u64 + 1
+    locations.len() as u64
 }
 
 #[cfg(test)]
