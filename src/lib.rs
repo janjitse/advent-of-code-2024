@@ -18,7 +18,9 @@ pub mod day12;
 pub mod day13;
 pub mod day14;
 mod day15;
+mod day16;
 
 // mod number_theory;
 mod statistics;
+// mod graph;
 aoc_lib! { year = 2024 }
