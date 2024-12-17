@@ -43,11 +43,26 @@ enum Opcode {
     Cdv(u64),
 }
 
+impl std::convert::From<(u64, u64)> for Opcode {
+    fn from((n, m): (u64, u64)) -> Self {
+        match n {
+            0 => Opcode::Adv(m),
+            1 => Opcode::Bxl(m),
+            2 => Opcode::Bst(m),
+            3 => Opcode::Jnz(m),
+            4 => Opcode::Bxc(m),
+            5 => Opcode::Out(m),
+            6 => Opcode::Bdv(m),
+            7 => Opcode::Cdv(m),
+            _ => panic!(),
+        }
+    }
+}
+
 fn combo(v: u64, registers: &[u64]) -> u64 {
     if v < 4 {
         return v;
-    }
-    if v < 7 {
+    } else if v < 7 {
         return registers[v as usize - 4];
     }
     panic!();
@@ -58,17 +73,7 @@ fn part1(input: &str) -> u64 {
     let (registers, instructions) = parse(input);
     let opcodes: Vec<Opcode> = instructions
         .chunks(2)
-        .map(|x| match x[0] {
-            0 => Opcode::Adv(x[1]),
-            1 => Opcode::Bxl(x[1]),
-            2 => Opcode::Bst(x[1]),
-            3 => Opcode::Jnz(x[1]),
-            4 => Opcode::Bxc(x[1]),
-            5 => Opcode::Out(x[1]),
-            6 => Opcode::Bdv(x[1]),
-            7 => Opcode::Cdv(x[1]),
-            _ => panic!(),
-        })
+        .map(|x| Opcode::from((x[0], x[1])))
         .collect();
     println!("{:?}", opcodes);
     let output = run(registers[0], &opcodes);
@@ -82,26 +87,48 @@ fn part2(input: &str) -> u64 {
     let orig_instructions = instructions.clone();
     let opcodes: Vec<Opcode> = instructions
         .chunks(2)
-        .map(|x| match x[0] {
-            0 => Opcode::Adv(x[1]),
-            1 => Opcode::Bxl(x[1]),
-            2 => Opcode::Bst(x[1]),
-            3 => Opcode::Jnz(x[1]),
-            4 => Opcode::Bxc(x[1]),
-            5 => Opcode::Out(x[1]),
-            6 => Opcode::Bdv(x[1]),
-            7 => Opcode::Cdv(x[1]),
-            _ => panic!(),
-        })
+        .map(|x| Opcode::from((x[0], x[1])))
         .collect();
     println!("{:?}", opcodes);
-    // return 0;
-
-    // let old_registers = registers.clone();
     let output = recurse(orig_instructions.len() - 1, &orig_instructions, 1, &opcodes);
-
-    // println!("{:?}", output.len());
     output.unwrap()
+}
+
+#[aoc(day17, part2, all)]
+fn part2_all(input: &str) -> u64 {
+    let (_, mut instructions) = parse(input);
+    let bxl1_loc = 3;
+    let bxl2_loc = 9;
+    let bxc_loc = 7;
+
+    let mut solvable: u64 = 0;
+    let mut unsolvable: u64 = 0;
+
+    for bxl1_val in 0..8 {
+        for bxl2_val in 0..8 {
+            for bxc_val in 0..8 {
+                instructions[bxl1_loc] = bxl1_val;
+                instructions[bxl2_loc] = bxl2_val;
+                instructions[bxc_loc] = bxc_val;
+                let orig_instructions = instructions.clone();
+                let opcodes: Vec<Opcode> = instructions
+                    .chunks(2)
+                    .map(|x| Opcode::from((x[0], x[1])))
+                    .collect();
+                match recurse(orig_instructions.len() - 1, &orig_instructions, 1, &opcodes) {
+                    None => {
+                        unsolvable += 1;
+                    }
+                    Some(_) => {
+                        println!("Solvable: {:?}", opcodes);
+                        solvable += 1;
+                    }
+                }
+            }
+        }
+    }
+    println!("Solvable: {:?}, unsolvable: {:?}", solvable, unsolvable);
+    0
 }
 
 fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> Option<u64> {
@@ -131,7 +158,6 @@ fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
     let mut cur_pointer = 0;
     let mut output = vec![];
     loop {
-        // println!("{:?}", cur_pointer);
         match opcodes[cur_pointer] {
             Opcode::Adv(v) => {
                 registers[0] >>= combo(v, &registers);
@@ -143,9 +169,7 @@ fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
                 registers[1] = combo(v, &registers) % 8;
             }
             Opcode::Jnz(v) => {
-                // println!("A: {:?}", registers[0]);
                 if registers[0] != 0 {
-                    // println!("v: {:?}", v);
                     cur_pointer = v as usize;
                     continue;
                 }
@@ -154,7 +178,6 @@ fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
                 registers[1] ^= registers[2];
             }
             Opcode::Out(v) => {
-                // println!("{:?}, {:?},", a, combo(v, &registers) % 8);
                 output.push(combo(v, &registers) % 8);
             }
             Opcode::Bdv(v) => {
@@ -164,13 +187,11 @@ fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
                 registers[2] = registers[0] >> combo(v, &registers);
             }
         }
-
         cur_pointer += 1;
         if cur_pointer >= opcodes.len() {
             break;
         }
     }
-    // println!("{:?}, {:?}", a, output);
     output
 }
 
