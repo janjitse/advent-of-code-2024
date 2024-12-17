@@ -55,7 +55,7 @@ fn combo(v: u64, registers: &[u64]) -> u64 {
 
 #[aoc(day17, part1)]
 fn part1(input: &str) -> u64 {
-    let (mut registers, instructions) = parse(input);
+    let (registers, instructions) = parse(input);
     let opcodes: Vec<Opcode> = instructions
         .chunks(2)
         .map(|x| match x[0] {
@@ -71,45 +71,8 @@ fn part1(input: &str) -> u64 {
         })
         .collect();
     println!("{:?}", opcodes);
-    // return 0;
-    let mut cur_pointer = 0;
-    loop {
-        match opcodes[cur_pointer] {
-            Opcode::Adv(v) => {
-                registers[0] >>= combo(v, &registers);
-            }
-            Opcode::Bxl(v) => {
-                registers[1] ^= v;
-            }
-            Opcode::Bst(v) => {
-                registers[1] = combo(v, &registers) % 8;
-            }
-            Opcode::Jnz(v) => {
-                if registers[0] != 0 {
-                    cur_pointer = v as usize;
-                    continue;
-                }
-            }
-            Opcode::Bxc(_v) => {
-                registers[1] ^= registers[2];
-            }
-            Opcode::Out(v) => {
-                print!("{:?},", combo(v, &registers) % 8);
-            }
-            Opcode::Bdv(v) => {
-                registers[1] = registers[0] >> combo(v, &registers);
-            }
-            Opcode::Cdv(v) => {
-                registers[2] = registers[0] >> combo(v, &registers);
-            }
-        }
-
-        cur_pointer += 1;
-        if cur_pointer >= opcodes.len() {
-            break;
-        }
-    }
-
+    let output = run(registers[0], &opcodes);
+    println!("{:?}", output);
     0
 }
 
@@ -160,7 +123,6 @@ fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> 
     if min_outcome < u64::MAX {
         return Some(min_outcome);
     }
-
     None
 }
 
