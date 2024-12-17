@@ -19,8 +19,7 @@ fn parse(input: &str) -> (Vec<u64>, Vec<u64>) {
         .take_while(|line| !line.is_empty())
         .map(|line| {
             line.split(": ")
-                .skip(1)
-                .next()
+                .nth(1)
                 .unwrap()
                 .split(",")
                 .map(|y| y.parse::<u64>().unwrap())
@@ -29,7 +28,7 @@ fn parse(input: &str) -> (Vec<u64>, Vec<u64>) {
         .next()
         .unwrap();
     println!("Parsing: {:?}", time_start.elapsed().unwrap());
-    return (output1, output2);
+    (output1, output2)
 }
 
 #[derive(Debug)]
@@ -44,7 +43,7 @@ enum Opcode {
     Cdv(u64),
 }
 
-fn combo(v: u64, registers: &Vec<u64>) -> u64 {
+fn combo(v: u64, registers: &[u64]) -> u64 {
     if v < 4 {
         return v;
     }
@@ -80,7 +79,7 @@ fn part1(input: &str) -> u64 {
                 registers[0] >>= combo(v, &registers);
             }
             Opcode::Bxl(v) => {
-                registers[1] = registers[1] ^ v;
+                registers[1] ^= v;
             }
             Opcode::Bst(v) => {
                 registers[1] = combo(v, &registers) % 8;
@@ -92,7 +91,7 @@ fn part1(input: &str) -> u64 {
                 }
             }
             Opcode::Bxc(_v) => {
-                registers[1] = registers[1] ^ registers[2];
+                registers[1] ^= registers[2];
             }
             Opcode::Out(v) => {
                 print!("{:?},", combo(v, &registers) % 8);
@@ -111,12 +110,12 @@ fn part1(input: &str) -> u64 {
         }
     }
 
-    return 0;
+    0
 }
 
 #[aoc(day17, part2)]
 fn part2(input: &str) -> u64 {
-    let (mut registers, instructions) = parse(input);
+    let (_, instructions) = parse(input);
     let orig_instructions = instructions.clone();
     let opcodes: Vec<Opcode> = instructions
         .chunks(2)
@@ -139,10 +138,10 @@ fn part2(input: &str) -> u64 {
     let output = recurse(orig_instructions.len() - 1, &orig_instructions, 1, &opcodes);
 
     // println!("{:?}", output.len());
-    return output.unwrap();
+    output.unwrap()
 }
 
-fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &Vec<Opcode>) -> Option<u64> {
+fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> Option<u64> {
     if depth == 0 {
         if run(so_far, opcodes) == *target {
             return Some(so_far);
@@ -152,7 +151,7 @@ fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &Vec<Opcode>) 
     }
     let mut min_outcome = u64::MAX;
     for trial in 8 * so_far..8 * so_far + 8 {
-        if run(trial, opcodes) == &target[depth - 1..] {
+        if run(trial, opcodes) == target[depth - 1..] {
             if let Some(outcome) = recurse(depth - 1, target, trial, opcodes) {
                 min_outcome = min_outcome.min(outcome);
             }
@@ -162,10 +161,10 @@ fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &Vec<Opcode>) 
         return Some(min_outcome);
     }
 
-    return None;
+    None
 }
 
-fn run(register_a: u64, opcodes: &Vec<Opcode>) -> Vec<u64> {
+fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
     let mut registers = vec![register_a, 0, 0];
     let mut cur_pointer = 0;
     let mut output = vec![];
@@ -176,7 +175,7 @@ fn run(register_a: u64, opcodes: &Vec<Opcode>) -> Vec<u64> {
                 registers[0] >>= combo(v, &registers);
             }
             Opcode::Bxl(v) => {
-                registers[1] = registers[1] ^ v;
+                registers[1] ^= v;
             }
             Opcode::Bst(v) => {
                 registers[1] = combo(v, &registers) % 8;
@@ -190,7 +189,7 @@ fn run(register_a: u64, opcodes: &Vec<Opcode>) -> Vec<u64> {
                 }
             }
             Opcode::Bxc(_v) => {
-                registers[1] = registers[1] ^ registers[2];
+                registers[1] ^= registers[2];
             }
             Opcode::Out(v) => {
                 // println!("{:?}, {:?},", a, combo(v, &registers) % 8);
@@ -210,7 +209,7 @@ fn run(register_a: u64, opcodes: &Vec<Opcode>) -> Vec<u64> {
         }
     }
     // println!("{:?}, {:?}", a, output);
-    return output;
+    output
 }
 
 #[cfg(test)]
