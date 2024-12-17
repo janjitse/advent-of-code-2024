@@ -94,7 +94,7 @@ fn part1(input: &str) -> u64 {
     }) = p_q.pop()
     {
         if pos.loc == end {
-            return d as u64;
+            return d;
         }
         if visited.contains(&pos) || visited.contains(&pos.flip()) {
             continue;
@@ -102,10 +102,6 @@ fn part1(input: &str) -> u64 {
         visited.insert(pos.clone());
         let mut cur_dir = pos.facing;
         for rot_cost in 0..4 {
-            if rot_cost == 2 {
-                cur_dir = clockwise[&cur_dir];
-                continue;
-            }
             let next_pos = (
                 pos.loc.0.wrapping_add(cur_dir.0),
                 pos.loc.1.wrapping_add(cur_dir.1),
@@ -117,7 +113,7 @@ fn part1(input: &str) -> u64 {
                 };
                 if !visited.contains(&xy) && !visited.contains(&xy.flip()) {
                     p_q.push(PriorityElement {
-                        dist: d + (rot_cost % 2) * 1000 + 1,
+                        dist: d + rot_cost.min(4 - rot_cost) * 1000 + 1,
                         pos: xy,
                         hist: None,
                     });
@@ -194,11 +190,6 @@ fn part2(input: &str) -> u64 {
             .insert(prev.clone());
         let mut cur_dir = pos.facing;
         for rot_cost in 0..4 {
-            if rot_cost == 2 {
-                // don't go back
-                cur_dir = clockwise[&cur_dir];
-                continue;
-            }
             let next_pos = (
                 pos.loc.0.wrapping_add(cur_dir.0),
                 pos.loc.1.wrapping_add(cur_dir.1),
@@ -208,7 +199,7 @@ fn part2(input: &str) -> u64 {
                     loc: next_pos,
                     facing: cur_dir,
                 };
-                let dist = d + (rot_cost % 2) * 1000 + 1;
+                let dist = d + rot_cost.min(4 - rot_cost) * 1000 + 1;
                 if dist <= *visited_distance.get(&xy).unwrap_or(&u64::MAX)
                     && dist <= *visited_distance.get(&xy.flip()).unwrap_or(&u64::MAX)
                 {
