@@ -69,16 +69,18 @@ fn combo(v: u64, registers: &[u64]) -> u64 {
 }
 
 #[aoc(day17, part1)]
-fn part1(input: &str) -> u64 {
+fn part1(input: &str) -> String {
     let (registers, instructions) = parse(input);
     let opcodes: Vec<Opcode> = instructions
         .chunks(2)
         .map(|x| Opcode::from((x[0], x[1])))
         .collect();
-    println!("{:?}", opcodes);
     let output = run(registers[0], &opcodes);
-    println!("{:?}", output);
-    0
+    output
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>()
+        .join(",")
 }
 
 #[aoc(day17, part2)]
@@ -89,7 +91,6 @@ fn part2(input: &str) -> u64 {
         .chunks(2)
         .map(|x| Opcode::from((x[0], x[1])))
         .collect();
-    println!("{:?}", opcodes);
     let output = recurse(orig_instructions.len() - 1, &orig_instructions, 1, &opcodes);
     output.unwrap()
 }
@@ -140,7 +141,7 @@ fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> 
         }
     }
     let mut min_outcome = u64::MAX;
-    for trial in 8 * so_far..8 * so_far + 8 {
+    for trial in 8 * so_far..8 * so_far + 128 {
         if run(trial, opcodes) == target[depth - 1..] {
             if let Some(outcome) = recurse(depth - 1, target, trial, opcodes) {
                 min_outcome = min_outcome.min(outcome);
@@ -205,7 +206,7 @@ mod tests {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
-        assert_eq!(part1(&contents), 0);
+        assert_eq!(part1(&contents), "4,6,3,5,6,3,5,2,1,0".to_string());
     }
 
     #[test]
@@ -213,13 +214,13 @@ mod tests {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_tiny.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
-        assert_eq!(part1(&contents), 0);
+        assert_eq!(part1(&contents), "4,2,5,6,7,7,7,7,3,1,0".to_string());
     }
     #[test]
     fn test_2() {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small2.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
-        assert_eq!(part2(&contents), 0);
+        assert_eq!(part2(&contents), 117440);
     }
 }
