@@ -1,3 +1,4 @@
+mod day18;
 extern crate aoc_runner;
 
 #[macro_use]
@@ -24,4 +25,5 @@ mod day17;
 // mod number_theory;
 mod statistics;
 // mod graph;
+// mod matrix;
 aoc_lib! { year = 2024 }
