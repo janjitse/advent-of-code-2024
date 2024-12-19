@@ -13,7 +13,7 @@ fn parse(input: &str) -> Vec<u32> {
 }
 
 #[aoc(day9, part1)]
-fn part1(input: &str) -> u128 {
+fn part1(input: &str) -> i128 {
     let x = parse(input);
     let mut checksum_vec = Vec::with_capacity(6 * x.len());
     for (idx, file_len) in x.iter().enumerate() {
@@ -27,12 +27,14 @@ fn part1(input: &str) -> u128 {
     let mut backpointer = checksum_vec.len() - 1;
     for idx in 0..checksum_vec.len() {
         if checksum_vec[idx] >= 0 {
-            output += checksum_vec[idx] as u128 * idx as u128;
+            output += checksum_vec[idx] as i128 * idx as i128;
         } else {
             while backpointer > idx && checksum_vec[backpointer] < 0 {
                 backpointer -= 1;
             }
-            output += idx as u128 * checksum_vec[backpointer] as u128;
+            if checksum_vec[backpointer] >= 0 {
+                output += idx as i128 * checksum_vec[backpointer] as i128;
+            }
             backpointer -= 1;
         }
         if backpointer <= idx {
