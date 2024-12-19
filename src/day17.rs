@@ -95,7 +95,8 @@ fn part2(input: &str) -> u64 {
     output.unwrap()
 }
 
-#[aoc(day17, part2, all)]
+#[allow(dead_code)]
+// #[aoc(day17, part2, all)]
 fn part2_all(input: &str) -> u64 {
     let (_, mut instructions) = parse(input);
     let bxl1_loc = 3;
