@@ -1,4 +1,3 @@
-mod day18;
 extern crate aoc_runner;
 
 #[macro_use]
@@ -21,6 +20,8 @@ pub mod day14;
 mod day15;
 mod day16;
 mod day17;
+mod day18;
+mod day19;
 
 // mod number_theory;
 mod statistics;
