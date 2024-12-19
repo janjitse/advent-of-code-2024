@@ -27,8 +27,8 @@ fn part1(input: &str) -> u64 {
     // println!("{:?}", towels);
     // println!("{:?}", patterns);
     let mut counter = 0;
-    let mut cache: FxHashMap<String, bool> = FxHashMap::default();
     for p in patterns {
+        let mut cache: FxHashMap<usize, bool> = FxHashMap::default();
         if recurse(&p, &towels, &mut cache) {
             counter += 1;
         }
@@ -36,12 +36,12 @@ fn part1(input: &str) -> u64 {
     counter
 }
 
-fn recurse(remaining: &str, towels: &Vec<String>, cache: &mut FxHashMap<String, bool>) -> bool {
+fn recurse(remaining: &str, towels: &[String], cache: &mut FxHashMap<usize, bool>) -> bool {
     if remaining.is_empty() {
         return true;
     }
-    if cache.contains_key(remaining) {
-        return cache[remaining];
+    if cache.contains_key(&remaining.len()) {
+        return cache[&remaining.len()];
     }
     let mut possible = false;
     for t in towels {
@@ -52,16 +52,16 @@ fn recurse(remaining: &str, towels: &Vec<String>, cache: &mut FxHashMap<String, 
             break;
         }
     }
-    cache.insert(remaining.to_string(), possible);
+    cache.insert(remaining.len(), possible);
     possible
 }
 
-fn recurse_count(remaining: &str, towels: &Vec<String>, cache: &mut FxHashMap<String, u64>) -> u64 {
+fn recurse_count(remaining: &str, towels: &[String], cache: &mut Vec<i64>) -> i64 {
     if remaining.is_empty() {
         return 1;
     }
-    if cache.contains_key(remaining) {
-        return cache[remaining];
+    if cache[remaining.len()] >= 0 {
+        return cache[remaining.len()];
     }
     let mut possible = 0;
     for t in towels {
@@ -69,16 +69,17 @@ fn recurse_count(remaining: &str, towels: &Vec<String>, cache: &mut FxHashMap<St
             possible += recurse_count(&remaining[t.len()..], towels, cache);
         }
     }
-    cache.insert(remaining.to_string(), possible);
+    cache[remaining.len()] = possible;
     possible
 }
 
 #[aoc(day19, part2)]
-fn part2(input: &str) -> u64 {
+fn part2(input: &str) -> i64 {
     let (towels, patterns) = parse(input);
     let mut counter = 0;
-    let mut cache: FxHashMap<String, u64> = FxHashMap::default();
+    
     for p in patterns {
+        let mut cache = vec![-1; p.len()+1];
         counter += recurse_count(&p, &towels, &mut cache);
     }
     counter
