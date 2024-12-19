@@ -54,7 +54,8 @@ struct File {
     id: isize,
 }
 
-#[aoc(day9, part2)]
+#[allow(dead_code)]
+// #[aoc(day9, part2)]
 fn part2(input: &str) -> u128 {
     let x = parse(input);
     let mut files: Vec<File> = vec![];

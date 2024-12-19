@@ -38,7 +38,8 @@ fn part1(input: &str) -> u64 {
     hash.values().sum()
 }
 
-#[aoc(day11, part1, rec)]
+#[allow(dead_code)]
+// #[aoc(day11, part1, rec)]
 fn part1_rec(input: &str) -> u64 {
     let output = parse(input);
     let mut cache = FxHashMap::default();
@@ -72,6 +73,7 @@ fn recurse_mem(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), u64>)
 
 type Counter = FxHashMap<u64, u64>;
 
+#[allow(dead_code)]
 fn recurse_dict(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), Counter>) -> Counter {
     if blinks_todo == 0 {
         return Counter::from_iter(vec![(idx, 1u64)]);
@@ -98,7 +100,8 @@ fn recurse_dict(blinks_todo: u8, idx: u64, cache: &mut FxHashMap<(u8, u64), Coun
     total
 }
 
-#[aoc(day11, part1, rec_dict)]
+#[allow(dead_code)]
+// #[aoc(day11, part1, rec_dict)]
 fn part1_rec_dict(input: &str) -> u64 {
     let output = parse(input);
     let mut total = Counter::default();
@@ -118,7 +121,8 @@ fn part1_rec_dict(input: &str) -> u64 {
     total.values().sum()
 }
 
-#[aoc(day11, part2, rec_dict)]
+#[allow(dead_code)]
+// #[aoc(day11, part2, rec_dict)]
 fn part2_rec_dict(input: &str) -> u64 {
     let output = parse(input);
     let mut total = Counter::default();
@@ -140,7 +144,8 @@ fn part2_rec_dict(input: &str) -> u64 {
     total.values().sum()
 }
 
-#[aoc(day11, part2, rec)]
+#[allow(dead_code)]
+// #[aoc(day11, part2, rec)]
 fn part2_rec(input: &str) -> u64 {
     let output = parse(input);
     let mut cache = FxHashMap::default();

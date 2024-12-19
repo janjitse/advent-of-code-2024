@@ -230,7 +230,8 @@ fn print_map(
     }
 }
 
-#[aoc(day15, part2, ids)]
+#[allow(dead_code)]
+// #[aoc(day15, part2, ids)]
 fn part2_ids(input: &str) -> u64 {
     let (map, movement) = parse(input);
     let mut robot_location = (0, 0);

@@ -5,7 +5,8 @@ pub fn part1(input: &str) -> i32 {
     parse(input).iter().map(|x| x[0] * x[1]).sum()
 }
 
-#[aoc(day3, part2)]
+#[allow(dead_code)]
+// #[aoc(day3, part2)]
 pub fn part2(input: &str) -> i32 {
     let (muls, do_pos, dont_pos, mul_pos) = parse_b(input);
     let mut outcome = 0;

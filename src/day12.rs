@@ -31,7 +31,8 @@ fn generate_regions(mut grid: Vec<Vec<char>>) -> Vec<FxHashSet<(usize, usize)>> 
     regions
 }
 
-#[aoc(day12, part1)]
+#[allow(dead_code)]
+// #[aoc(day12, part1)]
 fn part1(input: &str) -> u64 {
     let x = parse(input);
     let regions = generate_regions(x);
@@ -189,7 +190,8 @@ fn generate_regions_vec(mut grid: Vec<Vec<char>>) -> Vec<Vec<(usize, usize)>> {
     regions
 }
 
-#[aoc(day12, part2)]
+#[allow(dead_code)]
+// #[aoc(day12, part2)]
 fn part2(input: &str) -> u64 {
     let x = parse(input);
     let regions = generate_regions(x);
