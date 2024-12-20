@@ -55,17 +55,16 @@ fn part1(input: &str) -> u64 {
     let mut cheating_paths = 0;
     let full_distance = *distance_ord.get(&end).unwrap();
     for cheat_start_loc in spaces.iter() {
-        let cheat_length_start = *distance_ord.get(cheat_start_loc).unwrap_or(&i64::MAX);
+        let cheat_start_length = distance_ord[cheat_start_loc];
         for y_delta in -2..=2_isize {
             for x_delta in -2 + y_delta.abs()..=2_isize - y_delta.abs() {
                 let cheat_end_loc = (
                     cheat_start_loc.0.wrapping_add(y_delta as usize),
                     cheat_start_loc.1.wrapping_add(x_delta as usize),
                 );
-                if distance_ord.contains_key(&cheat_end_loc) {
-                    let cheat_end_length = *distance_ord.get(&cheat_end_loc).unwrap();
+                if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_length_start + (full_distance - cheat_end_length) + cheat_length as i64
+                    if cheat_start_length + (full_distance - cheat_end_length) + cheat_length as i64
                         <= full_distance - 100
                     {
                         cheating_paths += 1;
@@ -101,17 +100,16 @@ fn part2(input: &str) -> u64 {
     let mut cheating_paths = 0;
     let full_distance = *distance_ord.get(&end).unwrap();
     for cheat_start_loc in spaces.iter() {
-        let cheat_length_start = *distance_ord.get(cheat_start_loc).unwrap_or(&i64::MAX);
+        let cheat_start_length = distance_ord[cheat_start_loc];
         for y_delta in -20..=20_isize {
             for x_delta in -20 + y_delta.abs()..=20_isize - y_delta.abs() {
                 let cheat_end_loc = (
                     cheat_start_loc.0.wrapping_add(y_delta as usize),
                     cheat_start_loc.1.wrapping_add(x_delta as usize),
                 );
-                if distance_ord.contains_key(&cheat_end_loc) {
-                    let cheat_end_length = *distance_ord.get(&cheat_end_loc).unwrap();
+                if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_length_start + (full_distance - cheat_end_length) + cheat_length as i64
+                    if cheat_start_length + (full_distance - cheat_end_length) + cheat_length as i64
                         <= full_distance - 100
                     {
                         cheating_paths += 1;
