@@ -27,7 +27,7 @@ fn parse(input: &str) -> (Vec<u64>, Vec<u64>) {
         })
         .next()
         .unwrap();
-    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
     (output1, output2)
 }
 
@@ -133,7 +133,7 @@ fn part2_all(input: &str) -> u64 {
     0
 }
 
-fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> Option<u64> {
+fn recurse(depth: usize, target: &[u64], so_far: u64, opcodes: &[Opcode]) -> Option<u64> {
     if depth == 0 {
         if run(so_far, opcodes) == *target {
             return Some(so_far);
@@ -156,10 +156,10 @@ fn recurse(depth: usize, target: &Vec<u64>, so_far: u64, opcodes: &[Opcode]) -> 
 }
 
 fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
-    let mut registers = vec![register_a, 0, 0];
+    let mut registers = [register_a, 0, 0];
     let mut cur_pointer = 0;
-    let mut output = vec![];
-    loop {
+    let mut output = Vec::with_capacity(opcodes.len());
+    while cur_pointer < opcodes.len() {
         match opcodes[cur_pointer] {
             Opcode::Adv(v) => {
                 registers[0] >>= combo(v, &registers);
@@ -190,9 +190,6 @@ fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
             }
         }
         cur_pointer += 1;
-        if cur_pointer >= opcodes.len() {
-            break;
-        }
     }
     output
 }
