@@ -35,7 +35,7 @@ use fxhash::{FxHashMap, FxHashSet};
 fn part1(input: &str) -> u64 {
     let (spaces, start, end) = parse(input);
 
-    let directions = vec![(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
+    let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
     let mut distance_ord = FxHashMap::default();
     let mut cur_loc = start;
     distance_ord.insert(start, 0);
@@ -56,11 +56,8 @@ fn part1(input: &str) -> u64 {
     let full_distance = *distance_ord.get(&end).unwrap();
     for cheat_start_loc in spaces.iter() {
         let cheat_length_start = *distance_ord.get(cheat_start_loc).unwrap_or(&i64::MAX);
-        for y_delta in -2..=2 as isize {
-            for x_delta in -2..=2 as isize {
-                if x_delta.abs() + y_delta.abs() > 2 {
-                    continue;
-                }
+        for y_delta in -2..=2_isize {
+            for x_delta in -2 + y_delta.abs()..=2_isize - y_delta.abs() {
                 let cheat_end_loc = (
                     cheat_start_loc.0.wrapping_add(y_delta as usize),
                     cheat_start_loc.1.wrapping_add(x_delta as usize),
@@ -69,7 +66,7 @@ fn part1(input: &str) -> u64 {
                     let cheat_end_length = *distance_ord.get(&cheat_end_loc).unwrap();
                     let cheat_length = x_delta.abs() + y_delta.abs();
                     if cheat_length_start + (full_distance - cheat_end_length) + cheat_length as i64
-                        <= full_distance as i64 - 100
+                        <= full_distance - 100
                     {
                         cheating_paths += 1;
                     }
@@ -84,7 +81,7 @@ fn part1(input: &str) -> u64 {
 fn part2(input: &str) -> u64 {
     let (spaces, start, end) = parse(input);
 
-    let directions = vec![(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
+    let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
     let mut distance_ord = FxHashMap::default();
     let mut cur_loc = start;
     distance_ord.insert(start, 0);
@@ -105,11 +102,8 @@ fn part2(input: &str) -> u64 {
     let full_distance = *distance_ord.get(&end).unwrap();
     for cheat_start_loc in spaces.iter() {
         let cheat_length_start = *distance_ord.get(cheat_start_loc).unwrap_or(&i64::MAX);
-        for y_delta in -20..=20 as isize {
-            for x_delta in -20..=20 as isize {
-                if x_delta.abs() + y_delta.abs() > 20 {
-                    continue;
-                }
+        for y_delta in -20..=20_isize {
+            for x_delta in -20 + y_delta.abs()..=20_isize - y_delta.abs() {
                 let cheat_end_loc = (
                     cheat_start_loc.0.wrapping_add(y_delta as usize),
                     cheat_start_loc.1.wrapping_add(x_delta as usize),
@@ -118,7 +112,7 @@ fn part2(input: &str) -> u64 {
                     let cheat_end_length = *distance_ord.get(&cheat_end_loc).unwrap();
                     let cheat_length = x_delta.abs() + y_delta.abs();
                     if cheat_length_start + (full_distance - cheat_end_length) + cheat_length as i64
-                        <= full_distance as i64 - 100
+                        <= full_distance - 100
                     {
                         cheating_paths += 1;
                     }
