@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usize)) {
+fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usize), Vec<(usize, usize)>) {
     let time_start = SystemTime::now();
     let mut lines = input.lines();
     let output1: Vec<Vec<char>> = lines
@@ -10,12 +10,14 @@ fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usi
         .collect();
 
     let mut spaces = FxHashSet::default();
+    let mut spaces_vec = vec![];
     let mut start = (0, 0);
     let mut end = (0, 0);
     for (row_idx, row) in output1.iter().enumerate() {
         for (col_idx, &col) in row.iter().enumerate() {
             if col == '.' || col == 'S' || col == 'E' {
                 spaces.insert((row_idx, col_idx));
+                spaces_vec.push((row_idx, col_idx));
             }
             if col == 'E' {
                 end = (row_idx, col_idx);
@@ -25,15 +27,15 @@ fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usi
             }
         }
     }
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
-    (spaces, start, end)
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    (spaces, start, end, spaces_vec)
 }
 
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[aoc(day20, part1)]
 fn part1(input: &str) -> u64 {
-    let (spaces, start, end) = parse(input);
+    let (spaces, start, end, _) = parse(input);
 
     let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
     let mut distance_ord = FxHashMap::default();
@@ -53,9 +55,11 @@ fn part1(input: &str) -> u64 {
     }
 
     let mut cheating_paths = 0;
-    let full_distance = *distance_ord.get(&end).unwrap();
-    for (cheat_start_loc, _) in distance_ord.iter() {
-        let cheat_start_length = distance_ord[cheat_start_loc];
+    for cheat_start_loc in spaces.iter() {
+        let cheat_start_length = distance_ord.remove(&cheat_start_loc).unwrap_or(i64::MAX);
+        if cheat_start_length == i64::MAX {
+            continue;
+        }
         for y_delta in -2..=2_isize {
             for x_delta in -2 + y_delta.abs()..=2_isize - y_delta.abs() {
                 let cheat_end_loc = (
@@ -64,8 +68,8 @@ fn part1(input: &str) -> u64 {
                 );
                 if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_start_length + (full_distance - cheat_end_length) + cheat_length as i64
-                        <= full_distance - 100
+                    if cheat_start_length.abs_diff(cheat_end_length) as i64
+                        >=  100 + cheat_length as i64
                     {
                         cheating_paths += 1;
                     }
@@ -78,7 +82,7 @@ fn part1(input: &str) -> u64 {
 
 #[aoc(day20, part2)]
 fn part2(input: &str) -> u64 {
-    let (spaces, start, end) = parse(input);
+    let (spaces, start, end, spaces_vec) = parse(input);
 
     let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
     let mut distance_ord = FxHashMap::default();
@@ -98,10 +102,12 @@ fn part2(input: &str) -> u64 {
     }
 
     let mut cheating_paths = 0;
-    let full_distance = *distance_ord.get(&end).unwrap();
-    for (cheat_start_loc, _) in distance_ord.iter() {
-        let cheat_start_length = distance_ord[cheat_start_loc];
-        for y_delta in -20..=20_isize {
+    for cheat_start_loc in spaces_vec.iter() {
+        let cheat_start_length = distance_ord.remove(cheat_start_loc).unwrap_or(i64::MAX);
+        if cheat_start_length == i64::MAX {
+            continue;
+        }
+        for y_delta in 0..=20_isize {
             for x_delta in -20 + y_delta.abs()..=20_isize - y_delta.abs() {
                 let cheat_end_loc = (
                     cheat_start_loc.0.wrapping_add(y_delta as usize),
@@ -109,8 +115,8 @@ fn part2(input: &str) -> u64 {
                 );
                 if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_start_length + (full_distance - cheat_end_length) + cheat_length as i64
-                        <= full_distance - 100
+                    if cheat_start_length.abs_diff(cheat_end_length) as i64
+                        >=  100 + cheat_length as i64
                     {
                         cheating_paths += 1;
                     }
