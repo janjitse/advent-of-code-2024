@@ -27,7 +27,7 @@ fn parse(input: &str) -> (Vec<u64>, Vec<u64>) {
         })
         .next()
         .unwrap();
-    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    println!("Parsing: {:?}", time_start.elapsed().unwrap());
     (output1, output2)
 }
 
@@ -158,7 +158,7 @@ fn recurse(depth: usize, target: &[u64], so_far: u64, opcodes: &[Opcode]) -> Opt
 fn run(register_a: u64, opcodes: &[Opcode]) -> Vec<u64> {
     let mut registers = [register_a, 0, 0];
     let mut cur_pointer = 0;
-    let mut output = Vec::with_capacity(opcodes.len());
+    let mut output = Vec::with_capacity(2*opcodes.len());
     while cur_pointer < opcodes.len() {
         match opcodes[cur_pointer] {
             Opcode::Adv(v) => {
