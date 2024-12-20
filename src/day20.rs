@@ -1,6 +1,13 @@
 use std::time::SystemTime;
 
-fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usize), Vec<(usize, usize)>) {
+fn parse(
+    input: &str,
+) -> (
+    FxHashSet<(usize, usize)>,
+    (usize, usize),
+    (usize, usize),
+    Vec<(usize, usize)>,
+) {
     let time_start = SystemTime::now();
     let mut lines = input.lines();
     let output1: Vec<Vec<char>> = lines
@@ -56,7 +63,7 @@ fn part1(input: &str) -> u64 {
 
     let mut cheating_paths = 0;
     for cheat_start_loc in spaces.iter() {
-        let cheat_start_length = distance_ord.remove(&cheat_start_loc).unwrap_or(i64::MAX);
+        let cheat_start_length = distance_ord.remove(cheat_start_loc).unwrap_or(i64::MAX);
         if cheat_start_length == i64::MAX {
             continue;
         }
@@ -69,7 +76,7 @@ fn part1(input: &str) -> u64 {
                 if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
                     if cheat_start_length.abs_diff(cheat_end_length) as i64
-                        >=  100 + cheat_length as i64
+                        >= 100 + cheat_length as i64
                     {
                         cheating_paths += 1;
                     }
@@ -116,7 +123,7 @@ fn part2(input: &str) -> u64 {
                 if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
                     let cheat_length = x_delta.abs() + y_delta.abs();
                     if cheat_start_length.abs_diff(cheat_end_length) as i64
-                        >=  100 + cheat_length as i64
+                        >= 100 + cheat_length as i64
                     {
                         cheating_paths += 1;
                     }

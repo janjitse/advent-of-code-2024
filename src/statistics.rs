@@ -6,7 +6,7 @@ pub fn entropy(array: &Vec<u8>) -> f64 {
     let total = array.len() as u32; // add 256 for smoothing?
     bincount
         .into_iter()
-        .filter(|v| *v!=0)
+        .filter(|v| *v != 0)
         .map(|v| {
             let p = v as f64 / total as f64;
             -p * p.log2()

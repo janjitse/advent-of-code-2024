@@ -28,4 +28,5 @@ mod day20;
 mod statistics;
 // mod graph;
 // mod matrix;
+// mod geometry;
 aoc_lib! { year = 2024 }
