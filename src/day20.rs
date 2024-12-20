@@ -25,11 +25,11 @@ fn parse(input: &str) -> (FxHashSet<(usize, usize)>, (usize, usize), (usize, usi
             }
         }
     }
-    println!("Parsing: {:?}", time_start.elapsed().unwrap());
+    // println!("Parsing: {:?}", time_start.elapsed().unwrap());
     (spaces, start, end)
 }
 
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 #[aoc(day20, part1)]
 fn part1(input: &str) -> u64 {
@@ -54,7 +54,7 @@ fn part1(input: &str) -> u64 {
 
     let mut cheating_paths = 0;
     let full_distance = *distance_ord.get(&end).unwrap();
-    for cheat_start_loc in spaces.iter() {
+    for (cheat_start_loc, _) in distance_ord.iter() {
         let cheat_start_length = distance_ord[cheat_start_loc];
         for y_delta in -2..=2_isize {
             for x_delta in -2 + y_delta.abs()..=2_isize - y_delta.abs() {
@@ -99,7 +99,7 @@ fn part2(input: &str) -> u64 {
 
     let mut cheating_paths = 0;
     let full_distance = *distance_ord.get(&end).unwrap();
-    for cheat_start_loc in spaces.iter() {
+    for (cheat_start_loc, _) in distance_ord.iter() {
         let cheat_start_length = distance_ord[cheat_start_loc];
         for y_delta in -20..=20_isize {
             for x_delta in -20 + y_delta.abs()..=20_isize - y_delta.abs() {

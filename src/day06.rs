@@ -7,7 +7,7 @@ fn parse(input: &str) -> Vec<Vec<char>> {
         .collect()
 }
 
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 
 use rayon::prelude::*;
 
@@ -53,16 +53,16 @@ fn part1(input: &str) -> i32 {
     guard_been.len() as i32
 }
 
-fn find_next_larger(sorted_vec: &[usize], val: &usize, default: usize) -> usize {
-    let larger_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
+fn find_next_larger(sorted_vec: &[usize], val: usize, default: usize) -> usize {
+    let larger_idx = sorted_vec.binary_search(&val).unwrap_or_else(|e| e);
     *sorted_vec.get(larger_idx).unwrap_or(&(default + 1))
 }
 
-fn find_next_smaller(sorted_vec: &[usize], val: &usize, default: usize) -> usize {
-    let smaller_idx = sorted_vec.binary_search(val).unwrap_or_else(|e| e);
+fn find_next_smaller(sorted_vec: &[usize], val: usize) -> usize {
+    let smaller_idx = sorted_vec.binary_search(&val).unwrap_or_else(|e| e);
     *sorted_vec
         .get(smaller_idx.wrapping_sub(1))
-        .unwrap_or(&default)
+        .unwrap_or(&(usize::MAX - 1))
 }
 
 fn insert_sorted(sorted_vec: &mut Vec<usize>, val: usize) {
@@ -94,23 +94,21 @@ fn check_loop(
     loop {
         let next_pos = match cur_dir_idx {
             0 => {
-                let check = &obst_col_new[guard_pos.1];
-                let next_obst_row = find_next_smaller(check, &guard_pos.0, usize::MAX - 1);
+                let next_obst_row = find_next_smaller(&obst_col_new[guard_pos.1], guard_pos.0);
                 (next_obst_row + 1, guard_pos.1)
             }
             1 => {
-                let check = &obst_row_new[guard_pos.0];
-                let next_obst_col = find_next_larger(check, &guard_pos.1, vec_size.1);
+                let next_obst_col =
+                    find_next_larger(&obst_row_new[guard_pos.0], guard_pos.1, vec_size.1);
                 (guard_pos.0, next_obst_col - 1)
             }
             2 => {
-                let check = &obst_col_new[guard_pos.1];
-                let next_obst_row = find_next_larger(check, &guard_pos.0, vec_size.0);
+                let next_obst_row =
+                    find_next_larger(&obst_col_new[guard_pos.1], guard_pos.0, vec_size.0);
                 (next_obst_row - 1, guard_pos.1)
             }
             3 => {
-                let check = &obst_row_new[guard_pos.0];
-                let next_obst_col = find_next_smaller(check, &guard_pos.1, usize::MAX - 1);
+                let next_obst_col = find_next_smaller(&obst_row_new[guard_pos.0], guard_pos.1);
                 (guard_pos.0, next_obst_col + 1)
             }
             _ => {

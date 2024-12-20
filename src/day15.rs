@@ -20,7 +20,7 @@ fn parse(input: &str) -> (Vec<Vec<char>>, Vec<char>) {
     (map, movement)
 }
 
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 #[aoc(day15, part1)]
 fn part1(input: &str) -> u64 {

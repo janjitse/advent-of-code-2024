@@ -1,4 +1,4 @@
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 
 #[aoc(day1, part1)]
 pub fn part_a(contents: &str) -> i32 {

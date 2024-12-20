@@ -12,7 +12,7 @@ fn parse(input: &str) -> Vec<Vec<char>> {
     output1
 }
 
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 #[aoc(day8, part1)]
 fn part1(input: &str) -> i32 {

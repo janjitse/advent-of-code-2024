@@ -12,7 +12,7 @@ fn parse(input: &str) -> Vec<Vec<u32>> {
     output1
 }
 
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 use std::collections::VecDeque;
 
 #[aoc(day10, part1)]

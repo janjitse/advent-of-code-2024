@@ -21,7 +21,7 @@ fn parse(input: &str) -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
     (output1, output2)
 }
 
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 #[aoc(day5, part1)]
 fn part1(input: &str) -> i32 {

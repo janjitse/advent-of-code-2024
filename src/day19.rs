@@ -19,7 +19,7 @@ fn parse(input: &str) -> (Vec<String>, Vec<String>) {
     (output1, output2)
 }
 
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 
 #[aoc(day19, part1)]
 fn part1(input: &str) -> u64 {

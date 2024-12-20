@@ -1,4 +1,4 @@
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 
 pub fn entropy(array: &Vec<u8>) -> f64 {
     let mut bincount: FxHashMap<u8, u32> = FxHashMap::default();

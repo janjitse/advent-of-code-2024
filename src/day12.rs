@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, time::SystemTime};
 
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 
 fn parse(input: &str) -> Vec<Vec<char>> {
     let time_start = SystemTime::now();

@@ -12,7 +12,7 @@ fn parse(input: &str) -> Vec<Vec<char>> {
     output1
 }
 
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
 

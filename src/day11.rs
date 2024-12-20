@@ -10,7 +10,7 @@ fn parse(input: &str) -> Vec<u64> {
     output1
 }
 
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 
 #[aoc(day11, part1)]
 fn part1(input: &str) -> u64 {
