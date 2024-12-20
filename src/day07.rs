@@ -20,7 +20,7 @@ fn parse(input: &str) -> Vec<(u64, Vec<u64>)> {
     output1
 }
 
-#[allow(dead_code)] 
+#[allow(dead_code)]
 // #[aoc(day7, part1, slow)]
 fn part1(input: &str) -> u64 {
     let s = parse(input);
@@ -75,9 +75,9 @@ fn recurse_part_a(target: u64, todo_vec: &[u64]) -> bool {
         return true;
     }
     if *next_trial <= target {
-        return recurse_part_a(target - next_trial, todo_vec_new)
+        return recurse_part_a(target - next_trial, todo_vec_new);
     }
-    false    
+    false
 }
 
 #[aoc(day7, part2, recurse)]
@@ -112,9 +112,9 @@ fn recurse_part_b(target: u64, todo_vec: &[u64]) -> bool {
         }
     }
     if *next_trial <= target {
-        return recurse_part_b(target - next_trial, todo_vec_new)
+        return recurse_part_b(target - next_trial, todo_vec_new);
     }
-    false    
+    false
 }
 
 fn generate_ternary(mut nr: u64, length: usize) -> Vec<u64> {

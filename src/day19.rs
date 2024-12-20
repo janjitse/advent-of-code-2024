@@ -77,9 +77,9 @@ fn recurse_count(remaining: &str, towels: &[String], cache: &mut Vec<i64>) -> i6
 fn part2(input: &str) -> i64 {
     let (towels, patterns) = parse(input);
     let mut counter = 0;
-    
+
     for p in patterns {
-        let mut cache = vec![-1; p.len()+1];
+        let mut cache = vec![-1; p.len() + 1];
         counter += recurse_count(&p, &towels, &mut cache);
     }
     counter
