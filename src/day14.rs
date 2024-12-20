@@ -1,10 +1,12 @@
 use regex::Regex;
 use std::time::SystemTime;
 
-fn parse(input: &str) -> Vec<((i32, i32), (i32, i32))> {
+fn parse(input: &str) -> (Vec<(i32, i32)>, Vec<(i32, i32)>) {
     let time_start = SystemTime::now();
     let lines = input.lines();
-    let mut total_output = vec![];
+    // let mut total_output = vec![];
+    let mut positions = vec![];
+    let mut velocities = vec![];
     let regex = Regex::new(r"p=(?<px>-?\d+),(?<py>-?\d+) v=(?<vx>-?\d+),(?<vy>-?\d+)").unwrap();
     for l in lines {
         let cap = regex.captures(l).unwrap();
@@ -16,19 +18,20 @@ fn parse(input: &str) -> Vec<((i32, i32), (i32, i32))> {
             cap["vx"].parse::<i32>().unwrap(),
             cap["vy"].parse::<i32>().unwrap(),
         );
-        total_output.push((p, v));
+        positions.push(p);
+        velocities.push(v);
     }
     println!("Parsing: {:?}", time_start.elapsed().unwrap());
-    total_output
+    (positions, velocities)
 }
 
 #[aoc(day14, part1)]
 fn part1(input: &str) -> u64 {
-    let mut x = parse(input);
+    let (positions, velocities) = parse(input);
     let width = 101;
     let height = 103;
     let mut new_positions = vec![];
-    for (p, v) in x.iter() {
+    for (p, v) in positions.iter().zip(velocities.iter()) {
         let mut new_pos = ((p.0 + v.0 * 100) % width, (p.1 + v.1 * 100) % height);
         if new_pos.0 < 0 {
             new_pos = (new_pos.0 + width, new_pos.1);
@@ -36,12 +39,11 @@ fn part1(input: &str) -> u64 {
         if new_pos.1 < 0 {
             new_pos = (new_pos.0, new_pos.1 + height);
         }
-        new_positions.push((new_pos, *v));
+        new_positions.push(new_pos);
     }
-    x = new_positions;
     let mut quadrant_counts = (0, 0, 0, 0);
 
-    for (p, _) in x {
+    for p in new_positions {
         if p.0 < width / 2 && p.1 < height / 2 {
             quadrant_counts.0 += 1;
         }
@@ -56,7 +58,6 @@ fn part1(input: &str) -> u64 {
         }
     }
 
-    // println!("{:?}", quadrant_counts);
     quadrant_counts.0 * quadrant_counts.1 * quadrant_counts.2 * quadrant_counts.3
 }
 
@@ -64,7 +65,7 @@ use crate::statistics::entropy;
 
 #[aoc(day14, part2)]
 fn part2(input: &str) -> u64 {
-    let mut x = parse(input);
+    let (mut positions, velocities) = parse(input);
 
     let width = 101;
     let height = 103;
@@ -73,24 +74,22 @@ fn part2(input: &str) -> u64 {
     let mut min_t = 0;
     loop {
         t += 1;
-        let mut new_positions = vec![];
-        for (p, v) in x.into_iter() {
-            let mut new_pos = ((p.0 + v.0) % width, (p.1 + v.1) % height);
-            if new_pos.0 < 0 {
-                new_pos = (new_pos.0 + width, new_pos.1);
-            }
-            if new_pos.1 < 0 {
-                new_pos = (new_pos.0, new_pos.1 + height);
-            }
-            new_positions.push((new_pos, v));
-        }
-        x = new_positions;
+        positions = positions
+            .into_iter()
+            .enumerate()
+            .map(|(p_idx, p)| {
+                (
+                    (p.0 + velocities[p_idx].0 + width) % width,
+                    (p.1 + velocities[p_idx].1 + height) % height,
+                )
+            })
+            .collect();
 
         if t == (width * height) as u64 {
             break;
         }
         let mut flattened = vec![0u8; (width as usize * height as usize) / 6];
-        for (p, _) in x.iter() {
+        for p in positions.iter() {
             let loc_in_flattened = ((p.0 * width + p.1) / 6) as usize;
             let loc_in_u6 = (p.0 * width + p.1) % 6;
             flattened[loc_in_flattened] += 1 << loc_in_u6;
@@ -100,7 +99,6 @@ fn part2(input: &str) -> u64 {
         if entr < min_entropy {
             min_entropy = entr;
             min_t = t;
-            // println!("{:?},{:?}", t, entr);
         }
     }
     min_t
