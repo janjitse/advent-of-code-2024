@@ -7,7 +7,6 @@ authors = ["Jan Jitse <janjitse@gmail.com>"]
 [dependencies]
 aoc-runner = "*"
 aoc-runner-derive = "*"
-itertools = "0.13.0"
 rayon = "1.10.0"
 regex = "1.11.1"
 rustc-hash = "2.1.0"
