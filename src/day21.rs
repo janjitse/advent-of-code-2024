@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, time::SystemTime};
 
-fn parse(input: &str) ->  Vec<String> {
+fn parse(input: &str) -> Vec<String> {
     let time_start = SystemTime::now();
     let mut lines = input.lines();
     let output2 = lines
@@ -19,7 +19,7 @@ fn part1(input: &str) -> u64 {
     let instructions = parse(input);
     let mapping_1 = all_paths_1();
     let mapping_2 = all_paths_2();
-    
+
     println!("{:?}", mapping_1.keys().len());
 
     let mut outcome = 0;
@@ -28,14 +28,15 @@ fn part1(input: &str) -> u64 {
         let mut remaining = vec!['A'];
         let code_vec: Vec<char> = code.chars().collect();
         remaining.extend(code_vec);
-        let remaining_vec_deque = VecDeque::from_iter(remaining.windows(2).map(|x| (x[0],x[1])));
+        let remaining_vec_deque = VecDeque::from_iter(remaining.windows(2).map(|x| (x[0], x[1])));
         let min_vectors1 = recurse_1(remaining_vec_deque, &mapping_1);
         let mut min_vectors2: Vec<Vec<char>> = vec![];
         let mut min_length2 = usize::MAX;
         for k in min_vectors1 {
             let mut remaining2 = vec!['A'];
             remaining2.extend(k);
-            let remaining_vec_deque2 = VecDeque::from_iter(remaining2.windows(2).map(|x| (x[0],x[1])));
+            let remaining_vec_deque2 =
+                VecDeque::from_iter(remaining2.windows(2).map(|x| (x[0], x[1])));
             let results2 = recurse_1(remaining_vec_deque2, &mapping_2);
             for l in results2 {
                 if l.len() < min_length2 {
@@ -53,7 +54,8 @@ fn part1(input: &str) -> u64 {
         for k in min_vectors2 {
             let mut remaining3 = vec!['A'];
             remaining3.extend(k);
-            let remaining_vec_deque3 = VecDeque::from_iter(remaining3.windows(2).map(|x| (x[0],x[1])));
+            let remaining_vec_deque3 =
+                VecDeque::from_iter(remaining3.windows(2).map(|x| (x[0], x[1])));
             let results3 = recurse_1(remaining_vec_deque3, &mapping_2);
             for l in results3 {
                 if l.len() < min_length3 {
@@ -67,12 +69,14 @@ fn part1(input: &str) -> u64 {
         println!("{:?}, {:?}", code, min_vectors3.first().unwrap().len());
         let code_digit: u64 = code[0..3].parse().unwrap();
         outcome += min_vectors3.first().unwrap().len() as u64 * code_digit;
-
     }
     outcome
 }
 
-fn recurse_1(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char), Vec<String>>) -> Vec<Vec<char>> {
+fn recurse_1(
+    mut remaining: VecDeque<(char, char)>,
+    map1: &FxHashMap<(char, char), Vec<String>>,
+) -> Vec<Vec<char>> {
     if remaining.is_empty() {
         return vec![vec![]];
     }
@@ -80,11 +84,11 @@ fn recurse_1(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char),
     let mut return_value = vec![];
     let next_option = remaining.pop_front().unwrap();
     // println!("{:?}", next_option);
-    let outcomes = recurse_1(remaining.clone(),map1);
+    let outcomes = recurse_1(remaining.clone(), map1);
     for option in map1.get(&next_option).unwrap() {
         let mut option_vec: Vec<char> = option.chars().collect();
         option_vec.push('A');
-        
+
         for outcome in outcomes.iter() {
             let mut option_vec2 = option_vec.clone();
             option_vec2.extend(outcome);
@@ -93,16 +97,17 @@ fn recurse_1(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char),
                 return_value = vec![option_vec2];
             } else if (option_vec2.len() as u64) == min_cost {
                 return_value.push(option_vec2);
-            }    
+            }
         }
-
     }
 
-    return_value    
+    return_value
 }
 
-
-fn recurse_2(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char), Vec<String>>) -> Vec<Vec<char>> {
+fn recurse_2(
+    mut remaining: VecDeque<(char, char)>,
+    map1: &FxHashMap<(char, char), Vec<String>>,
+) -> Vec<Vec<char>> {
     if remaining.is_empty() {
         return vec![vec![]];
     }
@@ -110,38 +115,45 @@ fn recurse_2(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char),
     // let mut return_value = vec![];
     let next_option = remaining.pop_front().unwrap();
     // println!("{:?}", next_option);
-    let outcome = recurse_2(remaining.clone(),map1).first().unwrap().clone();
+    let outcome = recurse_2(remaining.clone(), map1).first().unwrap().clone();
     // println!("Length outcomes {:?}", outcomes.len());
-    let mut option_vec = map1.get(&next_option).unwrap().first().unwrap().chars().collect::<Vec<char>>();
+    let mut option_vec = map1
+        .get(&next_option)
+        .unwrap()
+        .first()
+        .unwrap()
+        .chars()
+        .collect::<Vec<char>>();
     // for option in map1.get(&next_option).unwrap() {
-        // let mut option_vec: Vec<char> = option.chars().collect();
-        option_vec.push('A');
-        
-        // for outcome in outcomes.iter() {
-            // let mut option_vec2 = option_vec.clone();
-            option_vec.extend(outcome);
-            // if (option_vec.len() as u64) < min_cost {
-                // min_cost = option_vec.len() as u64;
-                let return_value = vec![option_vec];
-            // } else if (option_vec2.len() as u64) == min_cost {
-            //     return_value.push(option_vec2);
-            // }    
-        // }
+    // let mut option_vec: Vec<char> = option.chars().collect();
+    option_vec.push('A');
+
+    // for outcome in outcomes.iter() {
+    // let mut option_vec2 = option_vec.clone();
+    option_vec.extend(outcome);
+    // if (option_vec.len() as u64) < min_cost {
+    // min_cost = option_vec.len() as u64;
+    let return_value = vec![option_vec];
+    // } else if (option_vec2.len() as u64) == min_cost {
+    //     return_value.push(option_vec2);
+    // }
+    // }
 
     // }
 
-    return_value    
+    return_value
 }
 
-
-fn recurse_1_cost(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,char), Vec<String>>, 
-    cache: &mut FxHashMap<VecDeque<(char,char)>, Vec<Vec<char>>>
-    ) -> Vec<Vec<char>> {
+fn recurse_1_cost(
+    mut remaining: VecDeque<(char, char)>,
+    map1: &FxHashMap<(char, char), Vec<String>>,
+    cache: &mut FxHashMap<VecDeque<(char, char)>, Vec<Vec<char>>>,
+) -> Vec<Vec<char>> {
     if remaining.is_empty() {
         return vec![vec![]];
     }
     if cache.contains_key(&remaining) {
-        return cache.get(&remaining).unwrap().clone()
+        return cache.get(&remaining).unwrap().clone();
     }
     let mut min_cost = u64::MAX;
     let mut return_value = vec![];
@@ -151,7 +163,7 @@ fn recurse_1_cost(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,c
     for option in map1.get(&next_option).unwrap() {
         let mut option_vec: Vec<char> = option.chars().collect();
         option_vec.push('A');
-        
+
         for outcome in outcomes.iter() {
             let mut option_vec2 = option_vec.clone();
             option_vec2.extend(outcome);
@@ -160,17 +172,15 @@ fn recurse_1_cost(mut remaining: VecDeque<(char,char)>, map1: &FxHashMap<(char,c
                 return_value = vec![option_vec2];
             } else if (option_vec2.len() as u64) == min_cost {
                 return_value.push(option_vec2);
-            }    
+            }
         }
-
     }
     cache.insert(remaining, return_value.clone());
 
-    return_value    
+    return_value
 }
 
-
-fn vector_cost(input: &Vec<char>, mapping_2: &FxHashMap<(char,char), Vec<String>>) -> usize {
+fn vector_cost(input: &Vec<char>, mapping_2: &FxHashMap<(char, char), Vec<String>>) -> usize {
     let mut cost = 0;
     let mut cost_vector = vec!['A'];
     cost_vector.extend(input);
@@ -180,35 +190,46 @@ fn vector_cost(input: &Vec<char>, mapping_2: &FxHashMap<(char,char), Vec<String>
     cost
 }
 
-fn all_paths_1() -> FxHashMap<(char,char), Vec<String>> {
-    let open_vec = vec![(0,0),(0,1),(0,2),(1,0),(1,1),(1,2),(2,0),(2,1),(2,2),(3,1),(3,2)];
-    let mapping_vec = vec![
-        ('A',(3,2)),
-        ('0',(3,1)),
-        ('1',(2,0)),
-        ('2',(2,1)),
-        ('3',(2,2)),
-        ('4',(1,0)),
-        ('5',(1,1)),
-        ('6',(1,2)),
-        ('7',(0,0)),
-        ('8',(0,1)),
-        ('9',(0,2))
+fn all_paths_1() -> FxHashMap<(char, char), Vec<String>> {
+    let open_vec = vec![
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 1),
+        (1, 2),
+        (2, 0),
+        (2, 1),
+        (2, 2),
+        (3, 1),
+        (3, 2),
     ];
-    let directions = [(0,1),(1,0),(0,-1),(-1,0)];
+    let mapping_vec = vec![
+        ('A', (3, 2)),
+        ('0', (3, 1)),
+        ('1', (2, 0)),
+        ('2', (2, 1)),
+        ('3', (2, 2)),
+        ('4', (1, 0)),
+        ('5', (1, 1)),
+        ('6', (1, 2)),
+        ('7', (0, 0)),
+        ('8', (0, 1)),
+        ('9', (0, 2)),
+    ];
+    let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let mapping = FxHashMap::from_iter(mapping_vec);
     let mut char_paths = FxHashMap::default();
-    let buttons = ['0','1','2','3','4','5','6','7','8','9','A'];
+    let buttons = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A'];
     let positions = FxHashSet::from_iter(open_vec);
-    
-    
+
     // for char_1 in buttons.iter() {
     for char_1 in buttons.iter() {
         let origin = *mapping.get(&char_1).unwrap();
         for char_2 in buttons.iter() {
             let end = *mapping.get(&char_2).unwrap();
             let mut queue = BinaryHeap::new();
-            queue.push((Reverse(0),origin,vec![]));
+            queue.push((Reverse(0), origin, vec![]));
             let mut all_paths = FxHashSet::default();
             let mut visited_distance = FxHashMap::default();
             let mut end_distance = u64::MAX;
@@ -235,7 +256,11 @@ fn all_paths_1() -> FxHashMap<(char,char), Vec<String>> {
                             if *history.last().unwrap_or(&dir) != dir {
                                 extra_distance += 100;
                             }
-                            queue.push((Reverse(distance.0+extra_distance), next_pos, new_history));
+                            queue.push((
+                                Reverse(distance.0 + extra_distance),
+                                next_pos,
+                                new_history,
+                            ));
                         }
                     }
                 }
@@ -251,48 +276,49 @@ fn all_paths_1() -> FxHashMap<(char,char), Vec<String>> {
                 let mut path_chars = vec![];
                 for step in path {
                     let char_step = match step {
-                        (0,1) => '>',
-                        (1,0) => 'v',
-                        (-1,0) => '^',
-                        (0,-1) => '<',
+                        (0, 1) => '>',
+                        (1, 0) => 'v',
+                        (-1, 0) => '^',
+                        (0, -1) => '<',
                         _ => panic!(),
                     };
                     path_chars.push(char_step);
-
                 }
                 let path_string: String = path_chars.into_iter().collect();
-                char_paths.entry((*char_1,*char_2)).or_insert(vec![]).push(path_string);
-            }            
+                char_paths
+                    .entry((*char_1, *char_2))
+                    .or_insert(vec![])
+                    .push(path_string);
+            }
         }
     }
     char_paths
 }
 
-use std::collections::BinaryHeap;
 use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 
-fn all_paths_2() -> FxHashMap<(char,char), Vec<String>> {
-    let open_vec = vec![(0,1),(0,2),(1,2),(1,1),(1,0)];
+fn all_paths_2() -> FxHashMap<(char, char), Vec<String>> {
+    let open_vec = vec![(0, 1), (0, 2), (1, 2), (1, 1), (1, 0)];
     let mapping_vec = vec![
-        ('A',(0,2)),
-        ('^',(0,1)),
-        ('>',(1,2)),
-        ('v',(1,1)),
-        ('<',(1,0)),
+        ('A', (0, 2)),
+        ('^', (0, 1)),
+        ('>', (1, 2)),
+        ('v', (1, 1)),
+        ('<', (1, 0)),
     ];
-    let directions = [(0,1),(1,0),(0,-1),(-1,0)];
+    let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let mapping = FxHashMap::from_iter(mapping_vec);
     let mut char_paths = FxHashMap::default();
-    let buttons = ['^','v','>','<','A'];
+    let buttons = ['^', 'v', '>', '<', 'A'];
     let positions = FxHashSet::from_iter(open_vec);
-    
-    
+
     for char_1 in buttons.iter() {
         let origin = *mapping.get(&char_1).unwrap();
         for char_2 in buttons.iter() {
             let end = *mapping.get(&char_2).unwrap();
             let mut queue = BinaryHeap::new();
-            queue.push((Reverse(0),origin,vec![]));
+            queue.push((Reverse(0), origin, vec![]));
             let mut all_paths = FxHashSet::default();
             let mut visited_distance = FxHashMap::default();
             let mut end_distance = u64::MAX;
@@ -319,7 +345,11 @@ fn all_paths_2() -> FxHashMap<(char,char), Vec<String>> {
                             if *history.last().unwrap_or(&dir) != dir {
                                 extra_distance += 100;
                             }
-                            queue.push((Reverse(distance.0+extra_distance), next_pos, new_history));
+                            queue.push((
+                                Reverse(distance.0 + extra_distance),
+                                next_pos,
+                                new_history,
+                            ));
                         }
                     }
                 }
@@ -335,40 +365,48 @@ fn all_paths_2() -> FxHashMap<(char,char), Vec<String>> {
                 let mut path_chars = vec![];
                 for step in path {
                     let char_step = match step {
-                        (0,1) => '>',
-                        (1,0) => 'v',
-                        (-1,0) => '^',
+                        (0, 1) => '>',
+                        (1, 0) => 'v',
+                        (-1, 0) => '^',
                         _ => '<',
                     };
                     path_chars.push(char_step);
-
                 }
                 let path_string: String = path_chars.into_iter().collect();
-                char_paths.entry((*char_1,*char_2)).or_insert(vec![]).push(path_string);
-            }            
+                char_paths
+                    .entry((*char_1, *char_2))
+                    .or_insert(vec![])
+                    .push(path_string);
+            }
         }
     }
-    char_paths.insert(('v','A'), vec!["^>".to_string()]);
-    char_paths.insert(('A','v'), vec!["<v".to_string()]);
-    char_paths.insert(('>','^'), vec!["<^".to_string()]);
-    char_paths.insert(('^','>'), vec!["v>".to_string()]);
+    char_paths.insert(('v', 'A'), vec!["^>".to_string()]);
+    char_paths.insert(('A', 'v'), vec!["<v".to_string()]);
+    char_paths.insert(('>', '^'), vec!["<^".to_string()]);
+    char_paths.insert(('^', '>'), vec!["v>".to_string()]);
 
     char_paths
 }
 
 fn split_into_blocks(min_string: &String) -> Vec<String> {
-    let mut blocks = min_string.split('A').map(|x| {let mut y = x.to_string(); y.push_str("A"); y}).collect::<Vec<String>>();
+    let mut blocks = min_string
+        .split('A')
+        .map(|x| {
+            let mut y = x.to_string();
+            y.push_str("A");
+            y
+        })
+        .collect::<Vec<String>>();
     blocks.pop();
     blocks
 }
-
 
 #[aoc(day21, part2)]
 fn part2(input: &str) -> u64 {
     let instructions = parse(input);
     let mapping_1 = all_paths_1();
     let mapping_2 = all_paths_2();
-    
+
     let mut blocks = vec![];
     for k in mapping_1.values() {
         for v in k {
@@ -389,7 +427,7 @@ fn part2(input: &str) -> u64 {
         let mut todo_vec = vec!['A'];
         todo_vec.extend(b.chars().collect::<Vec<char>>());
         for c in todo_vec.windows(2) {
-            let char_instr = mapping_2.get(&(c[0],c[1])).unwrap().first().unwrap();
+            let char_instr = mapping_2.get(&(c[0], c[1])).unwrap().first().unwrap();
             next_robot_instr.extend(char_instr.chars().collect::<Vec<char>>());
             next_robot_instr.push('A');
         }
@@ -408,15 +446,14 @@ fn part2(input: &str) -> u64 {
                 next_string.push_str(block_dictionary.get(b as &str).unwrap());
             }
             blocks_so_far = split_into_blocks(&next_string);
-
         }
         let block_string = blocks_so_far.join("");
         steps_ahead_8_full.insert(key.clone(), block_string);
     }
-    println!("{:?}", steps_ahead_8_full);
-    for v in steps_ahead_8_full.values() {
-        println!("{:?}", v.len());
-    }
+    // println!("{:?}", steps_ahead_8_full);
+    // for v in steps_ahead_8_full.values() {
+    //     println!("{:?}", v.len());
+    // }
     let mut steps_ahead_16_ints = FxHashMap::default();
     for key in blocks.iter() {
         let mut length = 0;
@@ -426,7 +463,7 @@ fn part2(input: &str) -> u64 {
         }
         steps_ahead_16_ints.insert(key, length);
     }
-    println!("{:?}", steps_ahead_16_ints);
+    // println!("{:?}", steps_ahead_16_ints);
     // println!("{:?}", mapping_2);
 
     let mut outcome = 0;
@@ -435,15 +472,13 @@ fn part2(input: &str) -> u64 {
         let mut remaining = vec!['A'];
         let code_vec: Vec<char> = code.chars().collect();
         remaining.extend(code_vec);
-        let remaining_vec_deque = VecDeque::from_iter(remaining.windows(2).map(|x| (x[0],x[1])));
+        let remaining_vec_deque = VecDeque::from_iter(remaining.windows(2).map(|x| (x[0], x[1])));
         let min_vectors1 = recurse_1(remaining_vec_deque, &mapping_1);
-        
-        
-        
+
         let min_vectors_hashset = FxHashSet::from_iter(min_vectors1);
         // println!("{:?}, {:?}", code, min_vectors_hashset);
         let mut vectors = vec![];
-        for v in  min_vectors_hashset {
+        for v in min_vectors_hashset {
             let s = String::from_iter(v);
             let t = split_into_blocks(&s);
             let mut output_string = "".to_string();
@@ -454,7 +489,7 @@ fn part2(input: &str) -> u64 {
         }
 
         let mut next_vectors = vec![];
-        for v in  vectors {
+        for v in vectors {
             let t = split_into_blocks(&v);
             let mut output_string = "".to_string();
             for b in t {
@@ -479,11 +514,9 @@ fn part2(input: &str) -> u64 {
         println!("{:?} {:?}", code, min_length as u64);
 
         outcome += min_length as u64 * code_digit;
-
     }
     outcome
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -495,7 +528,7 @@ mod tests {
         let s = Path::new(file!()).file_stem().unwrap().to_str().unwrap();
         let file_path = format!("input/2024/{}_small.txt", s);
         let contents = fs::read_to_string(file_path).expect("file not found");
-        assert_eq!(part1(&contents), 126384 );
+        assert_eq!(part1(&contents), 126384);
     }
 
     #[test]
