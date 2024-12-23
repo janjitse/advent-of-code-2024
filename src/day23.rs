@@ -158,10 +158,8 @@ fn bron_kerbosch(
         if r.count_ones(..) + p.count_ones(..) < cliques.count_ones(..) {
             return;
         }
-        let mut s_vec = p.ones().collect::<Vec<usize>>();
-        s_vec.sort_by_key(|&x| Reverse(graph.get(&x).unwrap().len()));
-        let pivot = s_vec.first().unwrap();
-        let pivot_nbhd = graph.get(pivot).unwrap();
+        let pivot = p.minimum().unwrap();
+        let pivot_nbhd = graph.get(&pivot).unwrap();
         for v in p.clone().ones() {
             if pivot_nbhd.contains(v) {
                 continue;
