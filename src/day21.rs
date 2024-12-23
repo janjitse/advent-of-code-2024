@@ -38,60 +38,44 @@ fn part1(input: &str) -> u64 {
         ('<', (1, 0)),
     ]);
 
-    let mapping_1 = all_paths_1(map1);
-    let mapping_2 = all_paths_1(map2);
-
-    println!("{:?}", mapping_1.keys().len());
+    let mapping_1 = shortest_paths(map1);
+    let mapping_2 = shortest_paths(map2);
 
     let mut outcome = 0;
-    // println!("{:?}", mapping_2.keys());
     for code in instructions {
         let mut remaining = vec!['A'];
         let code_vec: Vec<char> = code.chars().collect();
         remaining.extend(code_vec);
         let remaining_vec_deque = VecDeque::from_iter(remaining.windows(2).map(|x| (x[0], x[1])));
-        let min_vectors1 = generate_next_level(remaining_vec_deque, &mapping_1);
-        let mut min_vectors2: Vec<Vec<char>> = vec![];
-        let mut min_length2 = usize::MAX;
-        for k in min_vectors1 {
-            let mut remaining2 = vec!['A'];
-            remaining2.extend(k);
-            let remaining_vec_deque2 =
-                VecDeque::from_iter(remaining2.windows(2).map(|x| (x[0], x[1])));
-            let results2 = generate_next_level(remaining_vec_deque2, &mapping_2);
-            for l in results2 {
-                match l.len().cmp(&min_length2) {
-                    Ordering::Less => {
-                        min_length2 = l.len();
-                        min_vectors2 = vec![l];
+        let mut min_vectors1 = generate_next_level(remaining_vec_deque, &mapping_1);
+        for _ in 0..2 {
+            let mut min_vectors2: Vec<Vec<char>> = vec![];
+            let mut min_length2 = usize::MAX;
+            
+            for k in min_vectors1 {
+                let mut remaining2 = vec!['A'];
+                remaining2.extend(k);
+                let remaining_vec_deque2 =
+                    VecDeque::from_iter(remaining2.windows(2).map(|x| (x[0], x[1])));
+                let results2 = generate_next_level(remaining_vec_deque2, &mapping_2);
+                for l in results2 {
+                    match l.len().cmp(&min_length2) {
+                        Ordering::Less => {
+                            min_length2 = l.len();
+                            min_vectors2 = vec![l];
+                        }
+                        Ordering::Equal => min_vectors2.push(l),
+                        _ => {}
                     }
-                    Ordering::Equal => min_vectors2.push(l),
-                    _ => {}
                 }
             }
+            min_vectors1 = min_vectors2;
         }
-        println!("{:?}", min_vectors2.len());
-
-        let mut min_vectors3: Vec<Vec<char>> = vec![];
-        let mut min_length3 = usize::MAX;
-        for k in min_vectors2 {
-            let mut remaining3 = vec!['A'];
-            remaining3.extend(k);
-            let remaining_vec_deque3 =
-                VecDeque::from_iter(remaining3.windows(2).map(|x| (x[0], x[1])));
-            let results3 = generate_next_level(remaining_vec_deque3, &mapping_2);
-            for l in results3 {
-                if l.len() < min_length3 {
-                    min_length3 = l.len();
-                    min_vectors3 = vec![l];
-                } else if l.len() == min_length2 {
-                    min_vectors3.push(l)
-                }
-            }
-        }
-        println!("{:?}, {:?}", code, min_vectors3.first().unwrap().len());
+        
+        let min_length = min_vectors1.iter().min_by_key(|x| x.len()).unwrap().len() as u64;
+        println!("{:?}, {:?}", code, min_length);
         let code_digit: u64 = code[0..3].parse().unwrap();
-        outcome += min_vectors3.first().unwrap().len() as u64 * code_digit;
+        outcome += min_length * code_digit;
     }
     outcome
 }
@@ -132,17 +116,7 @@ fn generate_next_level(
 
 use std::cmp::Ordering;
 
-// fn vector_cost(input: &Vec<char>, mapping_2: &FxHashMap<(char, char), Vec<String>>) -> usize {
-//     let mut cost = 0;
-//     let mut cost_vector = vec!['A'];
-//     cost_vector.extend(input);
-//     for p in cost_vector.windows(2) {
-//         cost += mapping_2.get(&(p[0], p[1])).unwrap().first().unwrap().len() + 1;
-//     }
-//     cost
-// }
-
-fn all_paths_1(mapping: FxHashMap<char, (i32, i32)>) -> FxHashMap<(char, char), Vec<String>> {
+fn shortest_paths(mapping: FxHashMap<char, (i32, i32)>) -> FxHashMap<(char, char), Vec<String>> {
     let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let mut char_paths = FxHashMap::default();
     let positions = FxHashSet::from_iter(mapping.values());
@@ -213,6 +187,8 @@ fn all_paths_1(mapping: FxHashMap<char, (i32, i32)>) -> FxHashMap<(char, char), 
     }
 
     let keys = char_paths.keys().cloned().collect::<Vec<(char, char)>>();
+    // Only keep the paths where we have the < before the v, before the ^ before the >
+    // As other paths will at some point grow longer
     for k in keys {
         let initial_paths = char_paths.get_mut(&k).unwrap();
         initial_paths.sort_unstable_by(cmp_paths);
@@ -226,7 +202,8 @@ use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
 fn cmp_dirs(char1: char, char2: char) -> Ordering {
-    // Left before down before up/right: that gives the shortest path in the end
+    // Left before down before up before right: that gives the shortest path in the end
+    // This is because we want the "lefts" as early as possible, to avoid '<A<' combo's
     if char1 == char2 {
         return Ordering::Equal;
     }
@@ -238,7 +215,6 @@ fn cmp_dirs(char1: char, char2: char) -> Ordering {
 }
 
 fn cmp_paths(path1: &String, path2: &String) -> Ordering {
-    // Left before down before up/right: that gives the shortest path in the end
     if path1.len() != path2.len() {
         return path1.len().cmp(&path2.len());
     }
@@ -287,8 +263,8 @@ fn part2(input: &str) -> u64 {
         ('<', (1, 0)),
     ]);
 
-    let mapping_1 = all_paths_1(map1);
-    let mapping_2 = all_paths_1(map2);
+    let mapping_1 = shortest_paths(map1);
+    let mapping_2 = shortest_paths(map2);
 
     let mut blocks = FxHashSet::default();
     for k in mapping_1.values() {
@@ -392,7 +368,6 @@ fn part2(input: &str) -> u64 {
 
         let code_digit: u64 = code[0..3].parse().unwrap();
         let min_length = *next_next_vectors.iter().min().unwrap();
-        // let min_length = next_vectors.iter().min_by_key(|x| x.len()).unwrap().len();
         println!("{:?} {:?}", code, min_length as u64);
 
         outcome += min_length as u64 * code_digit;
