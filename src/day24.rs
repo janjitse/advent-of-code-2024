@@ -238,15 +238,18 @@ fn part2(input: &str) -> String {
         if input_x + input_y != vec_to_nr(&output) {
             correct = false;
         }
+        // println!("{:?},{:?},{:?},{:?}", input_x, input_y, vec_to_nr(&output), correct);
         if !correct {
             let mut relevant_keys_set = FxHashSet::from_iter(relevant_keys.iter().cloned());
             relevant_keys_set = relevant_keys_set.difference(&prev_keys).cloned().collect();
+            // println!("{:?}", relevant_keys_set);
             let mut relevant_gates_idx = vec![];
             for (idx, g) in gates.iter().enumerate() {
                 if relevant_keys_set.contains(&g.output) {
                     relevant_gates_idx.push(idx);
                 }
             }
+            // println!("{:?}", relevant_gates_idx);
             'outer: for swap1 in relevant_gates_idx.iter() {
                 for swap2 in relevant_gates_idx.iter() {
                     if (gates[*swap1].output.starts_with("z") && gates[*swap2].op != BitOp::XOR)
@@ -267,14 +270,29 @@ fn part2(input: &str) -> String {
                             nr_to_vec(input_y - (1 << idx), 45),
                             &gates,
                         );
-                        let (output3, _) = simulate_adder(
-                            nr_to_vec(input_x + (1 << idx), 45),
-                            nr_to_vec(input_y, 45),
-                            &gates,
-                        );
-                        if vec_to_nr(&output2) == input_x + input_y - (1 << idx)
-                            && vec_to_nr(&output3) == input_x + input_y + (1 << idx)
-                        {
+                        if idx > 0 {
+                            if vec_to_nr(&output2) != input_x + input_y - (1 << idx) {
+                                (gates[*swap1].output, gates[*swap2].output) =
+                                    (gates[*swap2].output.clone(), gates[*swap1].output.clone());
+                                continue;
+                            }
+                        }
+                        if idx < 44 {
+                            let (output3, _) = simulate_adder(
+                                nr_to_vec(input_x + (1 << idx), 45),
+                                nr_to_vec(input_y, 45),
+                                &gates,
+                            );
+                            if vec_to_nr(&output3) != input_x + input_y + (1 << idx) {
+                                (gates[*swap1].output, gates[*swap2].output) =
+                                    (gates[*swap2].output.clone(), gates[*swap1].output.clone());
+                                continue;
+                            }
+                        }
+
+                        
+                        
+                        
                             println!(
                                 "Solution found: {:?}, {:?}",
                                 gates[*swap1].output, gates[*swap2].output
@@ -282,9 +300,8 @@ fn part2(input: &str) -> String {
                             output_vec.push(gates[*swap1].output.clone());
                             output_vec.push(gates[*swap2].output.clone());
                             break 'outer;
-                        }
-                        (gates[*swap1].output, gates[*swap2].output) =
-                            (gates[*swap2].output.clone(), gates[*swap1].output.clone());
+                        
+
                     }
                 }
             }
