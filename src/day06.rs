@@ -7,9 +7,57 @@ fn parse(input: &str) -> Vec<Vec<char>> {
         .collect()
 }
 
+use fixedbitset::FixedBitSet;
 use rustc_hash::FxHashSet;
 
 use rayon::prelude::*;
+
+#[aoc(day6, part1, bitset)]
+fn part1_bitset(input: &str) -> i32 {
+    let vec1 = parse(input);
+    let mut guard_pos = (0, 0);
+    let width = vec1[0].len();
+    let height = vec1.len();
+    let mut guard_been = FixedBitSet::with_capacity(width * height);
+    let mut obstacles = FixedBitSet::with_capacity(width * height);
+    for x in 0..height {
+        for y in 0..width {
+            if vec1[x][y] == '#' {
+                obstacles.insert(x * width + y);
+            }
+            if vec1[x][y] == '^' {
+                guard_pos = (x, y);
+            }
+        }
+    }
+    guard_been.insert(guard_pos.0 * width + guard_pos.1);
+    let dirs = [(usize::MAX, 0), (0, 1), (1, 0), (0, usize::MAX)];
+    let mut cur_dir = dirs[0];
+    let mut cur_dir_idx = 0;
+    loop {
+        let mut next_pos = (
+            guard_pos.0.wrapping_add(cur_dir.0),
+            guard_pos.1.wrapping_add(cur_dir.1),
+        );
+        while next_pos.0 < height
+            && next_pos.1 < width
+            && obstacles.contains(next_pos.0 * width + next_pos.1)
+        {
+            cur_dir_idx = (cur_dir_idx + 1) % 4;
+            cur_dir = dirs[cur_dir_idx];
+            next_pos = (
+                guard_pos.0.wrapping_add(cur_dir.0),
+                guard_pos.1.wrapping_add(cur_dir.1),
+            )
+        }
+        if next_pos.0 >= height || next_pos.1 >= width {
+            break;
+        }
+        guard_been.insert(next_pos.0 * width + next_pos.1);
+        guard_pos = next_pos;
+    }
+    guard_been.count_ones(..) as i32
+}
 
 #[aoc(day6, part1)]
 fn part1(input: &str) -> i32 {
@@ -80,8 +128,7 @@ fn check_loop(
     if extra_obst == guard_orig_start {
         return false;
     }
-    // println!("Checking {:?}", extra_obst);
-    let mut guard_been_new_dir = FxHashSet::default();
+    let mut guard_been_new_dir = FixedBitSet::with_capacity(vec_size.0 * vec_size.1 * 4);
     let mut obst_row_new = obstacle_per_row.to_owned();
     let mut obst_col_new = obstacle_per_col.to_owned();
     insert_sorted(&mut obst_row_new[extra_obst.0], extra_obst.1);
@@ -89,7 +136,7 @@ fn check_loop(
 
     let mut guard_pos = *guard_orig_start;
     let mut cur_dir_idx = 0;
-    guard_been_new_dir.insert((guard_pos, cur_dir_idx));
+    guard_been_new_dir.insert(guard_pos.0 * vec_size.0 * 4 + guard_pos.1 * 4 + cur_dir_idx);
 
     loop {
         let next_pos = match cur_dir_idx {
@@ -120,12 +167,15 @@ fn check_loop(
             return false;
         }
         cur_dir_idx = (cur_dir_idx + 1) % 4;
-        if guard_been_new_dir.contains(&(next_pos, cur_dir_idx)) {
-            // println!("Loop fount at {:?}",extra_obst);
+        if next_pos.0 < vec_size.0
+            && next_pos.1 < vec_size.1
+            && guard_been_new_dir
+                .contains(next_pos.0 * vec_size.0 * 4 + next_pos.1 * 4 + cur_dir_idx)
+        {
             return true;
         }
 
-        guard_been_new_dir.insert((next_pos, cur_dir_idx));
+        guard_been_new_dir.insert(next_pos.0 * vec_size.0 * 4 + next_pos.1 * 4 + cur_dir_idx);
         guard_pos = next_pos;
     }
 }
@@ -136,8 +186,6 @@ fn part2(input: &str) -> i32 {
     let mut guard_pos = (0, 0);
 
     let mut orig_obstacles = FxHashSet::default();
-    // let mut obstacle_per_row = FxHashMap::default();
-    // let mut obstacle_per_col = FxHashMap::default();
     let vec_size = (vec1.len(), vec1[0].len());
     let mut obstacle_per_row = vec![vec![]; vec_size.0];
     let mut obstacle_per_col = vec![vec![]; vec_size.1];
@@ -153,8 +201,6 @@ fn part2(input: &str) -> i32 {
         }
     }
 
-    // println!("{:?}",obstacle_per_col.values().map(|x| x.len()).max().unwrap() );
-    // println!("{:?}",obstacle_per_row.values().map(|x| x.len()).max().unwrap() );
     for subvec in obstacle_per_col.iter_mut() {
         subvec.sort_unstable();
     }
@@ -187,10 +233,10 @@ fn part2(input: &str) -> i32 {
         guard_pos = next_pos;
     }
     guard_been
-        .par_iter()
+        .into_par_iter()
         .filter(|&x| {
             check_loop(
-                x,
+                &x,
                 &guard_orig_start,
                 &obstacle_per_row,
                 &obstacle_per_col,
