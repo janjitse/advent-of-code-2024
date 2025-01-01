@@ -135,11 +135,14 @@ fn part2(input: &str) -> u128 {
     checksum
 }
 
-#[derive(Default, Debug)]
 struct File2 {
     start: usize,
-    len: usize,
     id: usize,
+}
+
+struct Empty {
+    start: usize,
+    len: usize,
 }
 
 #[aoc(day9, part2, faster)]
@@ -158,23 +161,21 @@ fn part2_faster(input: &str) -> u128 {
         Vec::with_capacity(x.len() / 16),
     ];
     let mut last_non_empty = [0; 10];
-    let mut current_end = 0;
-    let mut empty_spaces: Vec<File2> = Vec::with_capacity(x.len() / 2);
     let mut right_most_start = [0; 10];
+    let mut current_end = 0;
+    let mut empty_spaces: Vec<Empty> = Vec::with_capacity(x.len() / 2);
     for (id, len) in x.chunks(2).enumerate() {
         files[len[0]].push(File2 {
             start: current_end,
-            len: len[0],
             id,
         });
         right_most_start[len[0]] = current_end;
         current_end += len[0];
         let empty_len = *len.get(1).unwrap_or(&0);
         if empty_len > 0 {
-            empty_spaces.push(File2 {
+            empty_spaces.push(Empty {
                 start: current_end,
                 len: empty_len,
-                id: 0,
             });
             current_end += empty_len;
         }
@@ -185,23 +186,29 @@ fn part2_faster(input: &str) -> u128 {
 
     let mut output = 0;
     for mut empty in empty_spaces {
+        if empty.start > *right_most_start.iter().max().unwrap_or(&0) {
+            break;
+        }
         while empty.len > 0 {
             let mut right_most_len = 0;
             let mut right_most = empty.start;
-            for file_len in 1..=empty.len {
-                if right_most_start[file_len] > right_most {
-                    right_most = right_most_start[file_len];
+            for (file_len, right_most_start_len) in
+                right_most_start.iter().enumerate().skip(1).take(empty.len)
+            {
+                if *right_most_start_len > right_most {
+                    right_most = *right_most_start_len;
                     right_most_len = file_len;
                 }
             }
-            if right_most == empty.start {
+            if right_most_len == 0 {
                 break;
             }
 
-            output += files[right_most_len][last_non_empty[right_most_len] - 1].id as u128
+            last_non_empty[right_most_len] -= 1;
+            output += files[right_most_len][last_non_empty[right_most_len]].id as u128
                 * ((empty.start * right_most_len) as u128
                     + (right_most_len * right_most_len - right_most_len) as u128 / 2);
-            last_non_empty[right_most_len] -= 1;
+
             right_most_start[right_most_len] =
                 files[right_most_len][last_non_empty[right_most_len] - 1].start;
             empty.len -= right_most_len;
@@ -211,9 +218,8 @@ fn part2_faster(input: &str) -> u128 {
 
     for (len, len_rem) in files.into_iter().enumerate().skip(1) {
         let len_contrib = ((len * len - len) / 2) as u128;
-        for file_idx in 0..last_non_empty[len] {
-            output += len_rem[file_idx].id as u128
-                * ((len_rem[file_idx].start * len) as u128 + len_contrib);
+        for file in len_rem.iter().take(last_non_empty[len]) {
+            output += file.id as u128 * ((file.start * len) as u128 + len_contrib);
         }
     }
     output
