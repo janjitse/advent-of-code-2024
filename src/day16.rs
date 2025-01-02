@@ -16,7 +16,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct Position {
     loc: (usize, usize),
     facing: (usize, usize),
@@ -173,19 +173,24 @@ fn part2(input: &str) -> u64 {
         if d > end_distance {
             break;
         }
-        if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX)
-            || d > *visited_distance.get(&pos.flip()).unwrap_or(&u64::MAX)
-        {
-            continue;
-        }
         if pos.loc == end {
             end_distance = d;
             previous_elements.entry(pos).or_default().insert(prev);
             continue;
         }
+        if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX)
+            || d > *visited_distance.get(&pos.flip()).unwrap_or(&u64::MAX)
+        {
+            continue;
+        }
         visited_distance.insert(pos.clone(), d);
+        if let Some(previous) = previous_elements.get(&pos) {
+            if previous.contains(&prev) {
+                continue;
+            }
+        }
         previous_elements
-            .entry(pos.clone())
+            .entry(pos)
             .or_default()
             .insert(prev.clone());
         let mut cur_dir = pos.facing;
@@ -213,7 +218,7 @@ fn part2(input: &str) -> u64 {
             cur_dir = clockwise[&cur_dir];
         }
     }
-    println!("Searching done");
+    // println!("Searching done");
     let mut locations = FxHashSet::default();
     locations.insert(end);
     let mut walkback = vec![];

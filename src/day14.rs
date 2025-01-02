@@ -4,7 +4,6 @@ use std::time::SystemTime;
 fn parse(input: &str) -> (Vec<(i32, i32)>, Vec<(i32, i32)>) {
     let time_start = SystemTime::now();
     let lines = input.lines();
-    // let mut total_output = vec![];
     let mut positions = vec![];
     let mut velocities = vec![];
     let regex = Regex::new(r"p=(?<px>-?\d+),(?<py>-?\d+) v=(?<vx>-?\d+),(?<vy>-?\d+)").unwrap();
@@ -63,7 +62,8 @@ fn part1(input: &str) -> u64 {
 
 use crate::statistics::entropy;
 
-#[aoc(day14, part2)]
+#[allow(dead_code)]
+// #[aoc(day14, part2)]
 fn part2(input: &str) -> u64 {
     let (mut positions, velocities) = parse(input);
 
@@ -99,6 +99,53 @@ fn part2(input: &str) -> u64 {
         if entr < min_entropy {
             min_entropy = entr;
             min_t = t;
+        }
+    }
+    min_t
+}
+
+#[aoc(day14, part2, faster)]
+fn part2_faster(input: &str) -> u64 {
+    let (mut positions, velocities) = parse(input);
+
+    let width = 101;
+    let height = 103;
+    let min_t = 0;
+    let mut max_x_entr = 0.0;
+    let mut max_y_entr = 0.0;
+    let mut max_x_entr_t = 0;
+    let mut max_y_entr_t = 0;
+    for t in 1..103 {
+        positions = positions
+            .into_iter()
+            .enumerate()
+            .map(|(p_idx, p)| {
+                (
+                    (p.0 + velocities[p_idx].0 + width) % width,
+                    (p.1 + velocities[p_idx].1 + height) % height,
+                )
+            })
+            .collect();
+        let mut x_vector = vec![0u8; width as usize];
+        let mut y_vector = vec![0u8; height as usize];
+        for p in positions.iter() {
+            x_vector[p.0 as usize] += 1;
+            y_vector[p.1 as usize] += 1;
+        }
+        let x_entr = entropy(&x_vector);
+        let y_entr = entropy(&y_vector);
+        if x_entr > max_x_entr {
+            max_x_entr = x_entr;
+            max_x_entr_t = t;
+        }
+        if y_entr > max_y_entr {
+            max_y_entr = y_entr;
+            max_y_entr_t = t;
+        }
+    }
+    for next_t in 1..103 {
+        if (max_x_entr_t + 101 * next_t) % 103 == max_y_entr_t {
+            return max_x_entr_t + 101 * next_t;
         }
     }
     min_t
