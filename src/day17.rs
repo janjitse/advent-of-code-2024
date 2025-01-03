@@ -141,16 +141,12 @@ fn recurse(depth: usize, target: &[u64], so_far: u64, opcodes: &[Opcode]) -> Opt
             return None;
         }
     }
-    let mut min_outcome = u64::MAX;
     for trial in 8 * so_far..8 * so_far + 128 {
         if run(trial, opcodes) == target[depth - 1..] {
             if let Some(outcome) = recurse(depth - 1, target, trial, opcodes) {
-                min_outcome = min_outcome.min(outcome);
+                return Some(outcome);
             }
         }
-    }
-    if min_outcome < u64::MAX {
-        return Some(min_outcome);
     }
     None
 }

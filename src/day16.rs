@@ -155,8 +155,7 @@ fn part2(input: &str) -> u64 {
     ]);
     let mut p_q = BinaryHeap::new();
     let mut visited_distance = FxHashMap::default();
-    let mut previous_elements: FxHashMap<Position, FxHashSet<Option<Position>>> =
-        FxHashMap::default();
+    let mut previous_elements: FxHashMap<Position, Vec<Option<Position>>> = FxHashMap::default();
     let previous = None;
     p_q.push(PriorityElement {
         dist: 0,
@@ -175,7 +174,7 @@ fn part2(input: &str) -> u64 {
         }
         if pos.loc == end {
             end_distance = d;
-            previous_elements.entry(pos).or_default().insert(prev);
+            previous_elements.entry(pos).or_default().push(prev);
             continue;
         }
         if d > *visited_distance.get(&pos).unwrap_or(&u64::MAX)
@@ -189,10 +188,7 @@ fn part2(input: &str) -> u64 {
                 continue;
             }
         }
-        previous_elements
-            .entry(pos)
-            .or_default()
-            .insert(prev.clone());
+        previous_elements.entry(pos).or_default().push(prev.clone());
         let mut cur_dir = pos.facing;
         for rot_cost in 0..4 {
             let next_pos = (
@@ -218,7 +214,6 @@ fn part2(input: &str) -> u64 {
             cur_dir = clockwise[&cur_dir];
         }
     }
-    // println!("Searching done");
     let mut locations = FxHashSet::default();
     locations.insert(end);
     let mut walkback = vec![];

@@ -38,100 +38,82 @@ fn parse(
     (spaces, start, end, spaces_vec)
 }
 
-use rustc_hash::{FxHashMap, FxHashSet};
+use rayon::prelude::*;
+use rustc_hash::FxHashSet;
 
 #[aoc(day20, part1)]
 fn part1(input: &str) -> u64 {
-    let (spaces, start, end, _) = parse(input);
-
-    let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
-    let mut distance_ord = FxHashMap::default();
-    let mut cur_loc = start;
-    distance_ord.insert(start, 0);
-    let mut cur_dist = 0;
-    while cur_loc != end {
-        for dir in directions.iter() {
-            let new_loc = (cur_loc.0.wrapping_add(dir.0), cur_loc.1.wrapping_add(dir.1));
-            if spaces.contains(&new_loc) && !distance_ord.contains_key(&new_loc) {
-                cur_loc = new_loc;
-                break;
-            }
-        }
-        cur_dist += 1;
-        distance_ord.insert(cur_loc, cur_dist);
-    }
-
-    let mut cheating_paths = 0;
-    for cheat_start_loc in spaces.iter() {
-        let cheat_start_length = distance_ord.remove(cheat_start_loc).unwrap_or(i64::MAX);
-        if cheat_start_length == i64::MAX {
-            continue;
-        }
-        for y_delta in -2..=2_isize {
-            for x_delta in -2 + y_delta.abs()..=2_isize - y_delta.abs() {
-                let cheat_end_loc = (
-                    cheat_start_loc.0.wrapping_add(y_delta as usize),
-                    cheat_start_loc.1.wrapping_add(x_delta as usize),
-                );
-                if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
-                    let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_start_length.abs_diff(cheat_end_length) as i64
-                        >= 100 + cheat_length as i64
-                    {
-                        cheating_paths += 1;
-                    }
-                }
-            }
-        }
-    }
-    cheating_paths
+    let (spaces, start, end, spaces_vec) = parse(input);
+    solve(spaces, start, end, spaces_vec, 2)
 }
 
 #[aoc(day20, part2)]
 fn part2(input: &str) -> u64 {
     let (spaces, start, end, spaces_vec) = parse(input);
+    solve(spaces, start, end, spaces_vec, 20)
+}
 
+fn solve(
+    spaces: FxHashSet<(usize, usize)>,
+    start: (usize, usize),
+    end: (usize, usize),
+    spaces_vec: Vec<(usize, usize)>,
+    max_cheat: isize,
+) -> u64 {
     let directions = [(0, 1), (1, 0), (0, usize::MAX), (usize::MAX, 0)];
-    let mut distance_ord = FxHashMap::default();
+    let max_height = spaces_vec.iter().max_by_key(|x| x.0).unwrap().0 + 1;
+    let max_width = spaces_vec.iter().max_by_key(|x| x.1).unwrap().1 + 1;
+    let mut distance_ord = vec![vec![u64::MAX; max_width]; max_height];
     let mut cur_loc = start;
-    distance_ord.insert(start, 0);
+    distance_ord[start.0][start.1] = 0;
     let mut cur_dist = 0;
     while cur_loc != end {
         for dir in directions.iter() {
             let new_loc = (cur_loc.0.wrapping_add(dir.0), cur_loc.1.wrapping_add(dir.1));
-            if spaces.contains(&new_loc) && !distance_ord.contains_key(&new_loc) {
+            if spaces.contains(&new_loc) && distance_ord[new_loc.0][new_loc.1] == u64::MAX {
                 cur_loc = new_loc;
                 break;
             }
         }
         cur_dist += 1;
-        distance_ord.insert(cur_loc, cur_dist);
+        distance_ord[cur_loc.0][cur_loc.1] = cur_dist;
     }
-
-    let mut cheating_paths = 0;
-    for cheat_start_loc in spaces_vec.iter() {
-        let cheat_start_length = distance_ord.remove(cheat_start_loc).unwrap_or(i64::MAX);
-        if cheat_start_length == i64::MAX {
-            continue;
-        }
-        for y_delta in 0..=20_isize {
-            for x_delta in -20 + y_delta.abs()..=20_isize - y_delta.abs() {
-                let cheat_end_loc = (
-                    cheat_start_loc.0.wrapping_add(y_delta as usize),
-                    cheat_start_loc.1.wrapping_add(x_delta as usize),
-                );
-                if let Some(&cheat_end_length) = distance_ord.get(&cheat_end_loc) {
-                    let cheat_length = x_delta.abs() + y_delta.abs();
-                    if cheat_start_length.abs_diff(cheat_end_length) as i64
-                        >= 100 + cheat_length as i64
-                    {
-                        cheating_paths += 1;
-                    }
-                }
-            }
-        }
-    }
-    cheating_paths
+    spaces_vec
+        .into_par_iter()
+        .map(|cheat_start_loc| {
+            (0..=max_cheat.min((max_height - cheat_start_loc.0 - 1) as isize))
+                .map(|y_delta| {
+                    let distance_ord = &distance_ord;
+                    let range = if y_delta > 0 {
+                        (-max_cheat + y_delta.abs()).max(-(cheat_start_loc.1 as isize))
+                            ..=(max_cheat - y_delta.abs())
+                                .min((max_width - cheat_start_loc.1 - 1) as isize)
+                    } else {
+                        2..=(max_cheat.min((max_width - cheat_start_loc.1 - 1) as isize))
+                    };
+                    range
+                        .filter(move |x_delta| {
+                            let cheat_end_loc = (
+                                cheat_start_loc.0.wrapping_add(y_delta as usize),
+                                cheat_start_loc.1.wrapping_add(*x_delta as usize),
+                            );
+                            if distance_ord[cheat_end_loc.0][cheat_end_loc.1] < u64::MAX {
+                                let cheat_start_length =
+                                    distance_ord[cheat_start_loc.0][cheat_start_loc.1];
+                                let cheat_end_length =
+                                    distance_ord[cheat_end_loc.0][cheat_end_loc.1];
+                                let cheat_length = x_delta.abs() + y_delta.abs();
+                                cheat_start_length.abs_diff(cheat_end_length) as i64
+                                    >= 100 + cheat_length as i64
+                            } else {
+                                false
+                            }
+                        })
+                        .count()
+                })
+                .sum::<usize>()
+        })
+        .sum::<usize>() as u64
 }
 
 #[cfg(test)]
