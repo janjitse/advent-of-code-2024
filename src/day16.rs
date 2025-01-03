@@ -99,7 +99,7 @@ fn part1(input: &str) -> u64 {
         if visited.contains(&pos) || visited.contains(&pos.flip()) {
             continue;
         }
-        visited.insert(pos.clone());
+        visited.insert(pos);
         let mut cur_dir = pos.facing;
         for rot_cost in 0..4 {
             let next_pos = (
@@ -182,13 +182,13 @@ fn part2(input: &str) -> u64 {
         {
             continue;
         }
-        visited_distance.insert(pos.clone(), d);
+        visited_distance.insert(pos, d);
         if let Some(previous) = previous_elements.get(&pos) {
             if previous.contains(&prev) {
                 continue;
             }
         }
-        previous_elements.entry(pos).or_default().push(prev.clone());
+        previous_elements.entry(pos).or_default().push(prev);
         let mut cur_dir = pos.facing;
         for rot_cost in 0..4 {
             let next_pos = (
@@ -207,7 +207,7 @@ fn part2(input: &str) -> u64 {
                     p_q.push(PriorityElement {
                         dist,
                         pos: xy,
-                        hist: Some(pos.clone()),
+                        hist: Some(pos),
                     });
                 }
             }

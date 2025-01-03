@@ -26,8 +26,8 @@ fn part1(input: &str) -> u64 {
             // lock
             let mut lock_depths = vec![];
             for col in 0..unk[0].len() {
-                for row in 0..unk.len() {
-                    if unk[row][col] == '.' {
+                for (row, item) in unk.iter().enumerate() {
+                    if item[col] == '.' {
                         lock_depths.push(row - 1);
                         break;
                     }
@@ -37,8 +37,8 @@ fn part1(input: &str) -> u64 {
         } else {
             let mut key_heights = vec![];
             for col in 0..unk[0].len() {
-                for row in 0..unk.len() {
-                    if unk[row][col] == '#' {
+                for (row, item) in unk.iter().enumerate() {
+                    if item[col] == '#' {
                         key_heights.push(6 - row);
                         break;
                     }
@@ -47,21 +47,17 @@ fn part1(input: &str) -> u64 {
             keys.push(key_heights);
         }
     }
-    println!("{:?}", keys);
-    println!("{:?}", locks);
     let mut count = 0;
     for k in keys.iter() {
         for l in locks.iter() {
             let mut possible = true;
             for (k_v, l_v) in k.iter().zip(l.iter()) {
                 if k_v + l_v >= 6 {
-                    // println!("{:?}, {:?} do not fit!", k, l);
                     possible = false;
                     break;
                 }
             }
             if possible {
-                // println!("{:?}, {:?} fit!", k, l);
                 count += 1;
             }
         }
@@ -69,8 +65,9 @@ fn part1(input: &str) -> u64 {
     count
 }
 
-#[aoc(day25, part2)]
-fn part2(input: &str) -> String {
+#[allow(dead_code)]
+// #[aoc(day25, part2)]
+fn part2(_input: &str) -> String {
     todo!()
 }
 
